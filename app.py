@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Tuple
 
 from game_logic import (
     add_event,
+    apply_scheduled_multiplier,
     add_strike,
     award_round,
     clear_strikes,
@@ -58,11 +59,11 @@ HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", os.environ.get("CIEN_MEXICANOS_PORT", "8765")))
 HOSTED = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-APP_VERSION = "8.0.0"
+APP_VERSION = "9.0.0"
 
 SUPPORTED_ACTIONS = {
     "undo", "set_question", "start_round", "next_question", "set_multiplier",
-    "set_control_team", "reveal", "strike", "clear_strikes", "award",
+    "set_control_team", "faceoff_miss", "reveal", "strike", "clear_strikes", "award",
     "team_name", "score", "timer_config", "timer_start", "timer_pause",
     "timer_reset", "screen_mode", "fast_update", "fast_reveal",
     "fast_hide_all", "round_reset", "reset_usage", "new_game", "restore_demo",
@@ -309,11 +310,18 @@ class GameApp:
                 elif action == "next_question":
                     if not self.state.get("round_awarded") and self.state.get("round_phase") != "review":
                         raise UserError("Primero entrega los puntos y cierra la ronda actual.")
-                    set_question(self.state, self.bank, self.next_unused_question_id())
+                    next_id = self.next_unused_question_id()
+                    self.state["round_number"] = int(self.state.get("round_number", 1)) + 1
+                    set_question(self.state, self.bank, next_id)
+                    apply_scheduled_multiplier(self.state, self.bank)
                 elif action == "set_multiplier":
                     set_multiplier(self.state, self.bank, int(payload.get("multiplier", 1)))
                 elif action == "set_control_team":
                     set_control_team(self.state, int(payload.get("team", -1)))
+                elif action == "faceoff_miss":
+                    if self.state.get("round_phase") != "faceoff":
+                        raise UserError("Este botón solo se usa durante el duelo inicial.")
+                    add_event(self.state, "faceoff_miss")
                 elif action == "reveal":
                     reveal_answer(self.state, self.bank, int(payload.get("index", -1)))
                 elif action == "strike":
@@ -366,6 +374,7 @@ class GameApp:
                     self.state["next_event_id"] = next_event_id
                     available = [str(q["id"]) for q in current_bank if str(q["id"]) not in self.usage]
                     self.state["current_question_id"] = available[0] if available else (old_current or str(current_bank[0]["id"]))
+                    apply_scheduled_multiplier(self.state, self.bank)
                     add_event(self.state, "new_game")
                 elif action == "restore_demo":
                     demo = validate_bank(load_json(DEMO_FILE, []))

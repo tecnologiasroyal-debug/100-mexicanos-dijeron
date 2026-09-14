@@ -34,6 +34,7 @@ def default_state() -> Dict[str, Any]:
         ],
         "screen_mode": "normal",
         "current_question_id": None,
+        "round_number": 1,
         "multiplier": 1,
         "revealed": [],
         "round_points": 0,
@@ -77,6 +78,10 @@ def sanitize_state(raw: Dict[str, Any] | None) -> Dict[str, Any]:
                 team["score"] = 0
 
     base["screen_mode"] = "fast_money" if base.get("screen_mode") == "fast_money" else "normal"
+    try:
+        base["round_number"] = max(1, int(base.get("round_number", 1)))
+    except Exception:
+        base["round_number"] = 1
     base["multiplier"] = int(base.get("multiplier", 1)) if str(base.get("multiplier", 1)).isdigit() else 1
     if base["multiplier"] not in (1, 2, 3):
         base["multiplier"] = 1
@@ -175,6 +180,27 @@ def set_question(state: Dict[str, Any], bank: List[Dict[str, Any]], question_id:
     state["control_team"] = None
     state["last_award"] = None
     add_event(state, "question_changed", question_id=str(question["id"]))
+
+
+def scheduled_multiplier(round_number: int) -> int:
+    """Esquema clásico: rondas 1-3 sencillas, 4 doble, 5+ triple."""
+    try:
+        n = max(1, int(round_number))
+    except Exception:
+        n = 1
+    if n <= 3:
+        return 1
+    if n == 4:
+        return 2
+    return 3
+
+
+def apply_scheduled_multiplier(state: Dict[str, Any], bank: List[Dict[str, Any]]) -> int:
+    value = scheduled_multiplier(state.get("round_number", 1))
+    state["multiplier"] = value
+    recompute_round_points(state, bank)
+    add_event(state, "multiplier_auto", value=value, round_number=int(state.get("round_number", 1)))
+    return value
 
 
 def set_multiplier(state: Dict[str, Any], bank: List[Dict[str, Any]], multiplier: int) -> None:
@@ -476,6 +502,7 @@ def public_state(state: Dict[str, Any], bank: List[Dict[str, Any]], now: float |
         "screen_mode": state["screen_mode"],
         "question": None if not question else {"id": str(question["id"]), "text": str(question["question"]), "answer_count": len(question.get("answers", []))},
         "answers": answers_public,
+        "round_number": int(state.get("round_number", 1)),
         "multiplier": int(state["multiplier"]),
         "round_points": int(state["round_points"]),
         "errors": int(state["errors"]),

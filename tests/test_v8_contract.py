@@ -11,10 +11,11 @@ def test_frontend_action_contract_matches_backend():
     actions = set(re.findall(r"apiAction\(['\"]([^'\"]+)", js))
     assert actions <= app.SUPPORTED_ACTIONS
 
-def test_v8_version_is_exposed_in_control_payload():
+def test_v9_version_is_exposed_in_control_payload():
     payload = app.APP.control_payload()
-    assert payload["app_version"] == "8.0.0"
+    assert payload["app_version"] == "9.0.0"
     assert "set_control_team" in payload["supported_actions"]
+    assert "faceoff_miss" in payload["supported_actions"]
 
 def test_faceoff_aliases_are_supported():
     for alias in ("faceoff_winner", "duel_winner", "choose_control_team", "set_family_control"):

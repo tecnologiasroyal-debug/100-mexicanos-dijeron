@@ -1,0 +1,7 @@
+100 Mexicanos Dijeron — V9
+
+- Botón de respuesta no encontrada en duelo inicial: reproduce el sonido de strike y muestra símbolo de prohibido, sin sumar STRIKE.
+- Multiplicador automático en formato clásico: rondas 1-3 x1, ronda 4 x2, ronda 5+ x3.
+- Tablero muestra PUNTOS AL DOBLE / PUNTOS AL TRIPLE de forma destacada.
+- Login móvil ajustado a 100dvh para evitar saltos/scroll innecesario.
+- Banco de 500 preguntas NO integrado todavía; se entrega aparte para revisión.

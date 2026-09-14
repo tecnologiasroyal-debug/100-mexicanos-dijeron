@@ -1,3 +1,7 @@
+# 100 Mexicanos Dijeron — V9
+
+**V9:** duelo con respuesta no encontrada sin sumar strike, multiplicadores automáticos clásicos (1–3 ×1, 4 ×2, 5+ ×3), aviso visual de doble/triple y login móvil ajustado. El banco de 500 preguntas se entrega por separado para revisión y todavía no está integrado.
+
 # 100 Mexicanos Dijeron — V8 AUDITADO
 
 Versión completa para PythonAnywhere y uso local. Esta versión corrige el problema **“Acción no reconocida”** al elegir qué familia ganó el duelo y añade comprobaciones para detectar si el navegador y PythonAnywhere están ejecutando versiones diferentes.

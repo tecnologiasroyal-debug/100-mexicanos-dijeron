@@ -10,6 +10,7 @@ const sounds = {
   reveal: $('#soundCorrect'),
   fast_reveal: $('#soundCorrect'),
   strike: $('#soundError'),
+  faceoff_miss: $('#soundError'),
   award: $('#soundVictory'),
   timer_timeout: $('#soundTimeout')
 };
@@ -41,6 +42,13 @@ function showStrike(count) {
   overlayTimer = setTimeout(() => $('#strikeOverlay').classList.remove('show'), 1350);
 }
 
+function showMiss() {
+  const el = $('#missOverlay');
+  el.classList.add('show');
+  clearTimeout(overlayTimer);
+  overlayTimer = setTimeout(() => el.classList.remove('show'), 1200);
+}
+
 function eventText(e, state) {
   if (e.type === 'award') {
     const name = state.teams[e.team]?.name || `Equipo ${e.team + 1}`;
@@ -49,6 +57,7 @@ function eventText(e, state) {
   if (e.type === 'control_team') { const name = state.teams[e.team]?.name || `Equipo ${e.team + 1}`; return `CONTINÚA: ${name}`; }
   if (e.type === 'undo') return 'ACCIÓN DESHECHA';
   if (e.type === 'timer_timeout') return 'TIEMPO AGOTADO';
+  if (e.type === 'faceoff_miss') return 'RESPUESTA NO ENCONTRADA';
   return '';
 }
 
@@ -57,6 +66,7 @@ function handleEvents(events, state) {
   for (const e of fresh) {
     play(e.type);
     if (e.type === 'strike') showStrike(e.count);
+    if (e.type === 'faceoff_miss') showMiss();
     const txt = eventText(e, state);
     if (txt) {
       $('#eventBanner').textContent = txt;
@@ -121,6 +131,11 @@ function render(s) {
   $('#team2Score').textContent = s.teams[1].score;
   $('#roundTotal').textContent = s.round_points;
   $('#multiplier').textContent = `×${s.multiplier}`;
+  const m = Number(s.multiplier || 1);
+  $('#multiplier').classList.toggle('double', m === 2);
+  $('#multiplier').classList.toggle('triple', m === 3);
+  $('#multiplierLabel').textContent = m === 2 ? 'PUNTOS AL DOBLE' : m === 3 ? 'PUNTOS AL TRIPLE' : 'RONDA NORMAL';
+  $('#multiplierLabel').classList.toggle('hot', m > 1);
   const remaining = Number(s.timer.remaining || 0);
   $('#timer').textContent = remaining;
   $('#timer').classList.toggle('danger', remaining <= 5 && s.timer.running);

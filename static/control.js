@@ -1,5 +1,5 @@
-const CLIENT_VERSION = "8.0.0";
-const REQUIRED_BACKEND_ACTIONS = ["start_round","set_control_team","reveal","strike","award","next_question","undo"];
+const CLIENT_VERSION = "9.0.0";
+const REQUIRED_BACKEND_ACTIONS = ["start_round","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo"];
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 let token = sessionStorage.getItem('100mx_token') || '';
@@ -42,7 +42,7 @@ function assertBackendCompatible(data) {
   const missing = REQUIRED_BACKEND_ACTIONS.filter(x => !supported.has(x));
   if (serverVersion !== CLIENT_VERSION || missing.length) {
     const detail = !serverVersion
-      ? 'El servidor es anterior a V8.'
+      ? 'El servidor es anterior a V9.'
       : `Interfaz V${CLIENT_VERSION} / servidor V${serverVersion}.`;
     const miss = missing.length ? ` Faltan acciones: ${missing.join(', ')}.` : '';
     throw new Error(`${detail}${miss} Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py, luego pulsa Reload en PythonAnywhere.`);
@@ -51,7 +51,7 @@ function assertBackendCompatible(data) {
 function friendlyActionError(action, error) {
   const text = String(error?.message || error || 'Error desconocido');
   if (/Acción no reconocida/i.test(text) || (action === 'set_control_team' && /no reconocida/i.test(text))) {
-    return new Error('El panel V8 está cargado, pero PythonAnywhere sigue ejecutando un backend anterior. Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py y pulsa Reload.');
+    return new Error('El panel V9 está cargado, pero PythonAnywhere sigue ejecutando un backend anterior. Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py y pulsa Reload.');
   }
   return error instanceof Error ? error : new Error(text);
 }
@@ -170,10 +170,17 @@ function renderQuestionPrep(data) {
   $('#usageModalCounter').textContent=`${usage.remaining} / ${usage.total}`;
   const warn=$('#usageWarning');
   if (usage.warning) { warn.textContent=usage.warning; warn.classList.remove('hidden'); } else warn.classList.add('hidden');
-  $$('[data-multiplier]').forEach(btn=>{
-    const n=Number(btn.dataset.multiplier); btn.classList.toggle('active',n===Number(st.multiplier));
-    btn.disabled=['faceoff','active','review'].includes(st.round_phase)||st.round_awarded;
-  });
+  const rn = Number(st.round_number || 1);
+  const mult = Number(st.multiplier || 1);
+  const sched = $('#roundScheduleBadge');
+  if (sched) {
+    sched.classList.toggle('double', mult === 2);
+    sched.classList.toggle('triple', mult === 3);
+    sched.classList.toggle('normal', mult === 1);
+    $('#roundScheduleRound').textContent = `RONDA ${rn}`;
+    $('#roundScheduleMultiplier').textContent = `×${mult}`;
+    $('#roundScheduleText').textContent = mult === 2 ? 'PUNTOS AL DOBLE' : mult === 3 ? 'PUNTOS AL TRIPLE' : 'PUNTOS NORMALES';
+  }
 }
 function renderFaceoff(data) {
   const st=data.state, q=questionForState(data), revealed=new Set(st.revealed||[]);
@@ -316,8 +323,8 @@ $('#saveTeamsNextBtn').onclick=saveTeamsAndNext;
 $('#continueGameBtn').onclick=()=>{ const st=current?.state; setStep(st?.round_awarded||st?.round_phase==='review'?5:st?.round_phase==='active'?4:st?.round_phase==='faceoff'?3:2); };
 $$('[data-goto-step]').forEach(btn=>btn.onclick=()=>{ const target=Number(btn.dataset.gotoStep); const st=current?.state; if(target===3&&!['faceoff','active'].includes(st?.round_phase)){return message('Primero inicia el duelo.',true);} if(target===4&&st?.round_phase!=='active'){return message('Primero elige quién ganó el duelo.',true);} if(target===5&&!['active','review'].includes(st?.round_phase)){return message('Primero juega la ronda.',true);} if(target===1 && current && !teamDraftDirty) syncTeamDraftFromState(current.state); setStep(target); });
 $('#questionSelect').onchange=e=>apiAction('set_question',{question_id:e.target.value}).then(()=>message('Pregunta preparada.')).catch(e=>message(e.message,true));
-$$('[data-multiplier]').forEach(btn=>btn.onclick=()=>apiAction('set_multiplier',{multiplier:Number(btn.dataset.multiplier)}).then(()=>message(`Ronda ×${btn.dataset.multiplier}.`)).catch(e=>message(e.message,true)));
 $('#startRoundBtn').onclick=()=>apiAction('start_round').then(()=>{setStep(3);message('Duelo iniciado. Pasa un participante de cada equipo.');}).catch(e=>message(e.message,true));
+$('#faceoffMissBtn').onclick=()=>apiAction('faceoff_miss').then(()=>message('Respuesta no encontrada. No se sumó strike.')).catch(e=>message(e.message,true));
 $('#faceoffAnswers').onclick=e=>{const b=e.target.closest('[data-faceoff-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.faceoffReveal)}).then(()=>message('Respuesta del duelo revelada.')).catch(x=>message(x.message,true));};
 async function chooseControlTeam(team){
   const btn = team===0 ? $('#faceoffTeam1Btn') : $('#faceoffTeam2Btn');

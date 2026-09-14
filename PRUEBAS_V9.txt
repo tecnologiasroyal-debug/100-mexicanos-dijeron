@@ -1,0 +1,13 @@
+PRUEBAS V9
+==========
+Resultado automatizado: 100 passed, 1 skipped.
+
+Se verificó:
+- Contrato frontend/backend de acciones.
+- Acción faceoff_miss soportada.
+- faceoff_miss no incrementa STRIKES.
+- Overlay de prohibido disponible en tablero público.
+- Sonido de error asociado a faceoff_miss.
+- Esquema automático: ronda 1 x1, 2 x1, 3 x1, 4 x2, 5 x3 y posteriores x3.
+- Texto visual PUNTOS AL DOBLE / PUNTOS AL TRIPLE.
+- Puntuación, entrega única, deshacer, temporizador, Excel y flujo de duelo existentes.

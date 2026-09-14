@@ -1,0 +1,34 @@
+100 MEXICANOS DIJERON — ACTUALIZAR A V9
+========================================
+
+CAMBIOS V9
+- Duelo inicial: botón "NO ESTÁ EN EL TABLERO". Usa el sonido strike.mp3 pero NO suma STRIKE.
+- En el tablero aparece un símbolo de prohibido rojo en lugar de una X de strike.
+- Multiplicadores automáticos en formato clásico: rondas 1-3 x1, ronda 4 x2, ronda 5 y posteriores x3.
+- El tablero muestra claramente PUNTOS AL DOBLE / PUNTOS AL TRIPLE.
+- Login móvil ajustado para caber mejor en la pantalla y evitar scroll innecesario.
+- El banco de 500 preguntas se revisa aparte y NO viene integrado todavía.
+
+ACTUALIZACIÓN SEGURA
+1. Sube a GitHub los archivos descomprimidos de V9 reemplazando el código anterior.
+2. No reemplaces data/ en PythonAnywhere si quieres conservar partida/preguntas.
+3. En Bash de PythonAnywhere ejecuta:
+
+cd ~/100-mexicanos-dijeron
+git fetch origin
+git checkout origin/main -- app.py game_logic.py excel_import.py pythonanywhere_wsgi.py static README.md VERSION_V9_DUELO_AUTO.txt
+
+4. Comprueba:
+
+grep -n 'APP_VERSION = "9.0.0"' app.py
+grep -n 'CLIENT_VERSION = "9.0.0"' static/control.js
+grep -Rni 'faceoff_miss' app.py static
+grep -Rni 'PUNTOS AL DOBLE' static
+
+5. Web > Reload rivaspruebas.pythonanywhere.com
+6. Abre una pestaña nueva:
+https://rivaspruebas.pythonanywhere.com/control?v=9
+
+DIAGNÓSTICO
+https://rivaspruebas.pythonanywhere.com/api/version
+debe mostrar app_version 9.0.0 y faceoff_miss entre supported_actions.

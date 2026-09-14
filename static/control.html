@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#061b40" />
   <title>Conductor — 100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css?v=8.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=9.0" />
 </head>
 <body class="app-body control-body host-v5">
   <section id="loginView" class="host-login">
@@ -22,7 +22,7 @@
       <input id="pinInput" class="host-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" />
       <button id="loginBtn" class="host-primary host-big">ENTRAR AL JUEGO</button>
       <div id="loginMsg" class="notice error hidden"></div>
-      <div class="host-credit">Desarrollado por Carlos Rivas · V8</div>
+      <div class="host-credit">Desarrollado por Carlos Rivas · V9</div>
     </div>
   </section>
 
@@ -86,7 +86,7 @@
           <div class="host-screen-head compact-head">
             <span class="host-step-label">PASO 2 DE 5</span>
             <h1>Prepara la ronda</h1>
-            <p>Elige la pregunta y el valor de esta ronda.</p>
+            <p>Elige la pregunta. El valor cambia automáticamente según la ronda clásica.</p>
           </div>
 
           <div class="round-preview-strip">
@@ -101,13 +101,14 @@
             <div id="usageWarning" class="usage-warning hidden"></div>
           </article>
 
-          <article class="host-panel">
-            <div class="host-panel-title"><span>Valor de la ronda</span><small>Selecciona uno</small></div>
-            <div class="host-multipliers">
-              <button class="host-mult" data-multiplier="1"><b>×1</b><span>NORMAL</span></button>
-              <button class="host-mult" data-multiplier="2"><b>×2</b><span>DOBLE</span></button>
-              <button class="host-mult" data-multiplier="3"><b>×3</b><span>TRIPLE</span></button>
+          <article class="host-panel round-schedule-panel">
+            <div class="host-panel-title"><span>Valor automático</span><small>Formato clásico</small></div>
+            <div id="roundScheduleBadge" class="round-schedule-badge normal">
+              <span id="roundScheduleRound">RONDA 1</span>
+              <b id="roundScheduleMultiplier">×1</b>
+              <strong id="roundScheduleText">PUNTOS NORMALES</strong>
             </div>
+            <p class="round-schedule-note">Rondas 1–3 normales · Ronda 4 al doble · Ronda 5 y posteriores al triple.</p>
           </article>
 
           <button id="startRoundBtn" class="host-primary host-next">▶ INICIAR DUELO</button>
@@ -146,6 +147,13 @@
             <p>Si el primero no consigue la respuesta más alta, pregunta al participante contrario. Puedes revelar ambas antes de decidir quién gana el control.</p>
             <div id="faceoffAnswers" class="host-answer-grid faceoff-answers"></div>
           </article>
+
+
+          <button id="faceoffMissBtn" class="faceoff-miss-btn" type="button">
+            <span class="mini-prohibit" aria-hidden="true"></span>
+            <b>NO ESTÁ EN EL TABLERO</b>
+            <small>Suena error, pero NO cuenta como strike</small>
+          </button>
 
           <div class="faceoff-decision">
             <span>¿QUIÉN GANÓ EL DUELO?</span>
@@ -248,7 +256,7 @@
         </div>
         <button id="boardBtn" class="host-bottom-action">▣ <span>TABLERO</span></button>
       </div>
-      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V8</div>
+      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V9</div>
     </div>
 
     <!-- DINERO RÁPIDO COMO MODO SEPARADO -->
@@ -314,6 +322,6 @@
   </div>
 
   <div id="actionToast" class="action-toast">Listo.</div>
-  <script src="/static/control.js?v=8.0"></script>
+  <script src="/static/control.js?v=9.0"></script>
 </body>
 </html>

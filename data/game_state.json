@@ -12,6 +12,7 @@
   ],
   "screen_mode": "normal",
   "current_question_id": "EJ-001",
+  "round_number": 1,
   "multiplier": 1,
   "revealed": [],
   "round_points": 0,
