@@ -1,0 +1,12 @@
+VERSIÓN V5 — PANEL DEL CONDUCTOR POR PASOS
+
+Cambios principales:
+- Panel principal dividido en 4 pasos: Equipos > Preparar > Jugar > Cerrar.
+- Se evita la página larga con secciones apiladas.
+- Menú lateral para herramientas secundarias.
+- Dinero rápido funciona como vista separada.
+- Logo de 100 Mexicanos Dijeron visible en login y cabecera.
+- Crédito visible: Desarrollado por Carlos Rivas.
+- Entrega de puntos separada del juego activo.
+- Después de entregar la ronda se pueden revelar faltantes antes de pasar a la siguiente.
+- Se conservan STRIKES, temporizador, Excel, historial, sonidos y deshacer.

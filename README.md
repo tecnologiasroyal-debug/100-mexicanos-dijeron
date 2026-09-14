@@ -49,3 +49,6 @@ Esta versión incluye el motor de historial/uso, pero **no añade todavía las 5
 ## Persistencia
 
 PythonAnywhere guarda `data/question_usage.json`, `data/game_state.json` y `data/question_bank.json` en el almacenamiento de tu cuenta. Por eso el historial de usadas se conserva entre sesiones y días, salvo que tú lo reinicies o reemplaces esos archivos.
+
+## Panel del conductor V5
+El panel del conductor ahora usa un flujo guiado de cuatro pasos: Equipos, Preparar, Jugar y Cerrar. Las funciones secundarias quedaron dentro de un menú lateral para evitar una página larga con scroll. El logo de 100 Mexicanos Dijeron y el crédito "Desarrollado por Carlos Rivas" están visibles también en el panel del conductor.

@@ -3,169 +3,268 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Control — 100 Mexicanos Dijeron</title>
+  <meta name="theme-color" content="#061b40" />
+  <title>Conductor — 100 Mexicanos Dijeron</title>
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
-<body class="app-body control-body">
-  <section id="loginView" class="login-wrap">
-    <div class="login-card">
-      <div class="control-logo">100 Mexicanos Dijeron</div>
-      <h1>Control del conductor</h1>
-      <p>Ingresa el código privado de 6 dígitos.</p>
-      <label for="pinInput">Código</label>
-      <input id="pinInput" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="000000" />
-      <button id="loginBtn" class="btn btn-blue btn-xl" style="width:100%; margin-top:12px">ENTRAR</button>
-      <div id="loginMsg" class="notice error hidden" style="margin-top:10px"></div>
+<body class="app-body control-body host-v5">
+  <section id="loginView" class="host-login">
+    <div class="host-login-card">
+      <div class="show-logo show-logo-xl" aria-label="100 Mexicanos Dijeron">
+        <span class="logo-100">100</span>
+        <span class="logo-mex">MEXICANOS</span>
+        <span class="logo-dijeron">DIJERON</span>
+      </div>
+      <p class="host-kicker">PANEL DEL CONDUCTOR</p>
+      <h1>Listo para jugar</h1>
+      <p class="host-muted">Ingresa el código privado para controlar el tablero.</p>
+      <label for="pinInput">Código de acceso</label>
+      <input id="pinInput" class="host-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" />
+      <button id="loginBtn" class="host-primary host-big">ENTRAR AL JUEGO</button>
+      <div id="loginMsg" class="notice error hidden"></div>
+      <div class="host-credit">Desarrollado por Carlos Rivas</div>
     </div>
   </section>
 
-  <div id="appView" class="hidden">
-    <header class="mobile-control-header">
-      <div>
-        <div class="control-logo small-logo">100 Mexicanos Dijeron</div>
-        <div id="connectionStatus" class="status">Conectado</div>
+  <div id="appView" class="hidden host-app">
+    <header class="host-header">
+      <div class="show-logo show-logo-sm" aria-label="100 Mexicanos Dijeron">
+        <span class="logo-100">100</span>
+        <span class="logo-mex">MEXICANOS</span>
+        <span class="logo-dijeron">DIJERON</span>
       </div>
-      <a class="btn btn-gold compact-btn" href="/public" target="_blank" rel="noopener">TABLERO ↗</a>
+      <div class="host-header-actions">
+        <span id="connectionStatus" class="host-online">● Conectado</span>
+        <button id="menuBtn" class="host-icon-btn" aria-label="Abrir menú">☰</button>
+      </div>
     </header>
 
-    <main class="control-container">
-      <section class="control-scoreboard">
-        <div class="mini-team team-a">
-          <div id="quickTeam1Name" class="mini-team-name">Equipo 1</div>
-          <div id="quickTeam1Score" class="mini-team-score">0</div>
-        </div>
-        <div class="round-center">
-          <div class="round-label">RONDA</div>
-          <div id="roundPointsControl" class="round-value">0</div>
-          <div id="phasePill" class="phase-pill">LISTA</div>
-        </div>
-        <div class="mini-team team-b">
-          <div id="quickTeam2Name" class="mini-team-name">Equipo 2</div>
-          <div id="quickTeam2Score" class="mini-team-score">0</div>
-        </div>
-      </section>
+    <div id="normalWizard">
+      <nav class="host-stepper" aria-label="Progreso de la partida">
+        <button class="host-step" data-goto-step="1"><b>1</b><span>Equipos</span></button>
+        <i></i>
+        <button class="host-step" data-goto-step="2"><b>2</b><span>Preparar</span></button>
+        <i></i>
+        <button class="host-step" data-goto-step="3"><b>3</b><span>Jugar</span></button>
+        <i></i>
+        <button class="host-step" data-goto-step="4"><b>4</b><span>Cerrar</span></button>
+      </nav>
 
-      <section id="normalControls">
-        <section class="mobile-card question-card-control">
-          <div class="section-title-row">
-            <h2>Pregunta</h2>
-            <div id="usageCounter" class="usage-counter">0 disponibles</div>
-          </div>
-          <select id="questionSelect" class="question-select"></select>
-          <div id="usageWarning" class="usage-warning hidden"></div>
-
-          <div class="multiplier-row" aria-label="Multiplicador">
-            <button class="multiplier-btn" data-multiplier="1">×1</button>
-            <button class="multiplier-btn" data-multiplier="2">×2</button>
-            <button class="multiplier-btn" data-multiplier="3">×3</button>
+      <main class="host-main">
+        <!-- PASO 1 -->
+        <section id="step1" class="host-screen">
+          <div class="host-screen-head">
+            <span class="host-step-label">PASO 1 DE 4</span>
+            <h1>¿Quiénes juegan?</h1>
+            <p>Configura los nombres una sola vez. Después el panel te llevará ronda por ronda.</p>
           </div>
 
-          <button id="startRoundBtn" class="btn btn-green btn-xl full-btn">▶ INICIAR RONDA</button>
-          <div id="reviewNotice" class="review-notice hidden">
-            <strong>Ronda entregada.</strong> Puedes descubrir las respuestas faltantes sin sumar puntos.
+          <div class="team-setup-grid">
+            <article class="team-setup-card team-blue-card">
+              <span class="team-chip">EQUIPO 1</span>
+              <label for="team1NameInput">Nombre del equipo</label>
+              <input id="team1NameInput" type="text" maxlength="40" placeholder="Ej. Los García" />
+              <div class="team-start-score"><span>Marcador</span><strong id="team1SetupScore">0</strong></div>
+            </article>
+            <article class="team-setup-card team-orange-card">
+              <span class="team-chip">EQUIPO 2</span>
+              <label for="team2NameInput">Nombre del equipo</label>
+              <input id="team2NameInput" type="text" maxlength="40" placeholder="Ej. Los Hernández" />
+              <div class="team-start-score"><span>Marcador</span><strong id="team2SetupScore">0</strong></div>
+            </article>
           </div>
-          <div class="post-round-actions">
-            <button id="revealNextMissingBtn" class="btn btn-purple big-action hidden">DESCUBRIR SIGUIENTE</button>
-            <button id="nextQuestionBtn" class="btn btn-green big-action hidden">SIGUIENTE PREGUNTA ▶</button>
-          </div>
+
+          <button id="saveTeamsNextBtn" class="host-primary host-next">GUARDAR Y PREPARAR PRIMERA RONDA <span>→</span></button>
+          <button id="continueGameBtn" class="host-ghost host-wide">Continuar partida actual</button>
         </section>
 
-        <section class="mobile-card">
-          <div class="section-title-row">
-            <h2>Respuestas</h2>
-            <span id="awardedPill" class="pill hidden">Puntos entregados</span>
+        <!-- PASO 2 -->
+        <section id="step2" class="host-screen hidden">
+          <div class="host-screen-head compact-head">
+            <span class="host-step-label">PASO 2 DE 4</span>
+            <h1>Prepara la ronda</h1>
+            <p>Elige la pregunta y el valor de esta ronda.</p>
           </div>
-          <div id="answerControls" class="mobile-answers"></div>
+
+          <div class="round-preview-strip">
+            <div class="preview-team"><span id="prepTeam1Name">Equipo 1</span><b id="prepTeam1Score">0</b></div>
+            <div class="preview-vs">VS</div>
+            <div class="preview-team orange"><span id="prepTeam2Name">Equipo 2</span><b id="prepTeam2Score">0</b></div>
+          </div>
+
+          <article class="host-panel">
+            <div class="host-panel-title"><span>Pregunta</span><b id="usageCounter">0 disponibles</b></div>
+            <select id="questionSelect" class="host-select"></select>
+            <div id="usageWarning" class="usage-warning hidden"></div>
+          </article>
+
+          <article class="host-panel">
+            <div class="host-panel-title"><span>Valor de la ronda</span><small>Selecciona uno</small></div>
+            <div class="host-multipliers">
+              <button class="host-mult" data-multiplier="1"><b>×1</b><span>NORMAL</span></button>
+              <button class="host-mult" data-multiplier="2"><b>×2</b><span>DOBLE</span></button>
+              <button class="host-mult" data-multiplier="3"><b>×3</b><span>TRIPLE</span></button>
+            </div>
+          </article>
+
+          <button id="startRoundBtn" class="host-primary host-next">▶ INICIAR RONDA</button>
+          <button class="host-back" data-goto-step="1">← Volver a equipos</button>
         </section>
 
-        <section class="mobile-card strike-card">
-          <div class="section-title-row"><h2>Strikes</h2><span id="strikeCount" class="strike-count">0 / 3</span></div>
-          <div class="strike-visual" id="strikeVisual"><span>×</span><span>×</span><span>×</span></div>
-          <div class="quick-two">
-            <button id="strikeBtn" class="btn btn-red btn-xl">✕ STRIKE</button>
-            <button id="clearStrikesBtn" class="btn btn-light btn-xl">LIMPIAR</button>
+        <!-- PASO 3 -->
+        <section id="step3" class="host-screen hidden">
+          <div class="live-topline">
+            <div><span>RONDA EN JUEGO</span><b id="liveMultiplier">×1</b></div>
+            <div class="live-pot"><span>BOLSA</span><strong id="roundPointsControl">0</strong></div>
+            <div class="live-timer-mini"><span>TIEMPO</span><strong id="timerPill">30 s</strong></div>
           </div>
+
+          <article class="host-question-live">
+            <span>PREGUNTA</span>
+            <h2 id="liveQuestionText">Pregunta actual</h2>
+          </article>
+
+          <div id="answerControls" class="host-answer-grid"></div>
+
+          <div class="host-game-controls">
+            <section class="host-strikes-panel">
+              <div class="strike-heading"><b>STRIKES</b><span id="strikeCount">0 / 3</span></div>
+              <div id="strikeVisual" class="host-strike-lights"><span>×</span><span>×</span><span>×</span></div>
+              <div class="host-two-buttons">
+                <button id="strikeBtn" class="host-danger">✕ AGREGAR STRIKE</button>
+                <button id="clearStrikesBtn" class="host-secondary">LIMPIAR</button>
+              </div>
+            </section>
+
+            <section class="host-timer-panel">
+              <div class="timer-quick-title">TEMPORIZADOR</div>
+              <div class="timer-quick-row">
+                <input id="timerSeconds" type="number" min="1" max="3600" value="30" />
+                <button id="timerSet" class="host-secondary">AJUSTAR</button>
+                <button id="timerStart" class="timer-play">▶</button>
+                <button id="timerPause" class="timer-pause">Ⅱ</button>
+                <button id="timerReset" class="host-secondary">↺</button>
+              </div>
+            </section>
+          </div>
+
+          <button id="goAwardBtn" class="host-gold host-next">IR A ENTREGA DE PUNTOS <span>→</span></button>
         </section>
 
-        <section class="mobile-card award-card">
-          <div class="section-title-row"><h2>Entregar puntos</h2><select id="awardReason" class="compact-select"><option value="ronda">Ganó la ronda</option><option value="robo">Robo</option></select></div>
-          <div class="award-grid">
-            <button id="awardTeam1" class="btn award-btn award-a"><span id="awardName1">EQUIPO 1</span><strong>+ PUNTOS</strong></button>
-            <button id="awardTeam2" class="btn award-btn award-b"><span id="awardName2">EQUIPO 2</span><strong>+ PUNTOS</strong></button>
+        <!-- PASO 4 -->
+        <section id="step4" class="host-screen hidden">
+          <div class="host-screen-head compact-head">
+            <span class="host-step-label">PASO 4 DE 4</span>
+            <h1 id="closeTitle">Cierra la ronda</h1>
+            <p id="closeSubtitle">Indica quién se lleva los puntos de la bolsa.</p>
           </div>
-          <p class="microcopy">La entrega solo se permite una vez. Si te equivocas, usa <strong>Deshacer</strong>.</p>
+
+          <div class="close-pot-card">
+            <span>PUNTOS DE ESTA RONDA</span>
+            <strong id="closeRoundPoints">0</strong>
+            <small id="closeMultiplier">Incluye multiplicador ×1</small>
+          </div>
+
+          <div id="awardArea">
+            <div class="reason-toggle">
+              <button class="reason-btn active" data-reason="ronda">GANÓ LA RONDA</button>
+              <button class="reason-btn" data-reason="robo">ROBO DE PUNTOS</button>
+            </div>
+            <div class="winner-grid">
+              <button id="awardTeam1" class="winner-btn winner-blue"><span id="awardName1">EQUIPO 1</span><b>ENTREGAR</b></button>
+              <button id="awardTeam2" class="winner-btn winner-orange"><span id="awardName2">EQUIPO 2</span><b>ENTREGAR</b></button>
+            </div>
+            <button class="host-back" data-goto-step="3">← Regresar a la ronda</button>
+          </div>
+
+          <div id="reviewArea" class="hidden">
+            <div class="round-awarded-banner">
+              <span>✓ PUNTOS ENTREGADOS</span>
+              <strong id="awardSummary">Ronda cerrada</strong>
+              <small>Ahora puedes mostrar las respuestas que quedaron ocultas. Ya no sumarán puntos.</small>
+            </div>
+            <div id="missingAnswers" class="missing-answers"></div>
+            <button id="revealNextMissingBtn" class="host-purple host-next">DESCUBRIR SIGUIENTE RESPUESTA</button>
+            <button id="nextQuestionBtn" class="host-primary host-next">PREPARAR SIGUIENTE RONDA <span>→</span></button>
+          </div>
         </section>
-      </section>
+      </main>
 
-      <section class="mobile-card timer-card">
-        <div class="section-title-row"><h2>Temporizador</h2><span id="timerPill" class="timer-pill">30 s</span></div>
-        <div class="timer-actions">
-          <div class="timer-seconds"><input id="timerSeconds" type="number" min="1" max="3600" value="30" /></div>
-          <button id="timerSet" class="btn btn-light">AJUSTAR</button>
-          <button id="timerStart" class="btn btn-blue">▶</button>
-          <button id="timerPause" class="btn btn-gold">Ⅱ</button>
-          <button id="timerReset" class="btn btn-light">↺</button>
+      <div class="host-bottom-bar">
+        <button id="undoBtn" class="host-bottom-action">↶ <span>DESHACER</span></button>
+        <div class="host-score-mini">
+          <span id="bottomTeam1">Equipo 1 <b>0</b></span>
+          <i>—</i>
+          <span id="bottomTeam2">Equipo 2 <b>0</b></span>
         </div>
-      </section>
-
-      <section class="mobile-card mode-card">
-        <div class="section-title-row"><h2>Modo de pantalla</h2><span id="modePill" class="pill">Ronda normal</span></div>
-        <div class="quick-two"><button id="normalModeBtn" class="btn btn-blue btn-lg">Ronda normal</button><button id="fastModeBtn" class="btn btn-dark btn-lg">Dinero rápido</button></div>
-      </section>
-
-      <section id="fastControls" class="mobile-card hidden">
-        <h2>Dinero rápido</h2>
-        <div class="row"><div style="width:130px"><label>Meta</label><input id="fastTargetInput" type="number" min="1" value="200" /></div><span id="fastTotalPill" class="pill">Total: 0</span></div>
-        <div class="quick-two" style="margin-top:10px"><button id="saveFastBtn" class="btn btn-blue">Guardar</button><button id="hideFastBtn" class="btn btn-light">Ocultar todo</button></div>
-        <div id="fastWarnings"></div>
-        <div id="fastEditor"></div>
-      </section>
-
-      <details class="mobile-card advanced-card">
-        <summary>Equipos y corrección de marcador</summary>
-        <div class="advanced-content grid-2">
-          <div class="team-edit">
-            <label>Equipo 1</label><input id="team1NameInput" type="text" />
-            <div class="scoreline"><div><label>Marcador</label><input id="team1ScoreInput" type="number" min="0" /></div><button class="btn" data-score-team="0">Corregir</button><button class="btn btn-blue" data-name-team="0">Guardar nombre</button></div>
-          </div>
-          <div class="team-edit">
-            <label>Equipo 2</label><input id="team2NameInput" type="text" />
-            <div class="scoreline"><div><label>Marcador</label><input id="team2ScoreInput" type="number" min="0" /></div><button class="btn" data-score-team="1">Corregir</button><button class="btn btn-blue" data-name-team="1">Guardar nombre</button></div>
-          </div>
-        </div>
-      </details>
-
-      <details class="mobile-card advanced-card">
-        <summary>Banco de preguntas</summary>
-        <div class="advanced-content">
-          <p class="small">Importar reemplaza el banco actual. Columnas: ID, Pregunta, Respuesta y Puntos.</p>
-          <input id="xlsxInput" type="file" accept=".xlsx" />
-          <div class="quick-two" style="margin-top:10px"><button id="importBtn" class="btn btn-blue">Importar .xlsx</button><button id="restoreDemoBtn" class="btn btn-light">Restaurar ejemplos</button></div>
-          <div id="importMsg" class="notice hidden" style="margin-top:10px"></div>
-          <div class="history-box">
-            <strong>Historial de preguntas usadas</strong>
-            <p class="small">Las preguntas marcadas como usadas no volverán a salir, aunque cierres el juego y vuelvas otro día.</p>
-            <button id="resetUsageBtn" class="btn btn-red">Reiniciar historial de usadas</button>
-          </div>
-        </div>
-      </details>
-
-      <details class="mobile-card advanced-card">
-        <summary>Partida y mantenimiento</summary>
-        <div class="advanced-content">
-          <div class="quick-two"><button id="resetRoundBtn" class="btn btn-light">Reiniciar ronda actual</button><button id="newGameBtn" class="btn btn-red">Nueva partida</button></div>
-        </div>
-      </details>
-    </main>
-
-    <div class="mobile-dock">
-      <button id="dockStrike" class="dock-btn dock-red">✕<small>STRIKE</small></button>
-      <button id="dockAward1" class="dock-btn dock-blue">+<small id="dockTeam1">EQUIPO 1</small></button>
-      <button id="dockAward2" class="dock-btn dock-orange">+<small id="dockTeam2">EQUIPO 2</small></button>
-      <button id="undoBtn" class="dock-btn dock-dark">↶<small>DESHACER</small></button>
+        <button id="boardBtn" class="host-bottom-action">▣ <span>TABLERO</span></button>
+      </div>
+      <div class="host-credit-fixed">Desarrollado por Carlos Rivas</div>
     </div>
-    <div id="actionToast" class="action-toast">Listo.</div>
+
+    <!-- DINERO RÁPIDO COMO MODO SEPARADO -->
+    <section id="fastMoneyView" class="host-special-view hidden">
+      <div class="special-head">
+        <button id="exitFastBtn" class="host-icon-btn">←</button>
+        <div><span>MODO ESPECIAL</span><h2>Dinero rápido</h2></div>
+      </div>
+      <div class="fast-summary"><label>Meta <input id="fastTargetInput" type="number" min="1" value="200" /></label><b id="fastTotalPill">Total: 0</b></div>
+      <div id="fastWarnings"></div>
+      <div id="fastEditor"></div>
+      <div class="fast-actions"><button id="saveFastBtn" class="host-primary">GUARDAR CAMBIOS</button><button id="hideFastBtn" class="host-secondary">OCULTAR TODO</button></div>
+    </section>
   </div>
+
+  <!-- MENÚ / HERRAMIENTAS -->
+  <div id="toolsSheet" class="host-sheet hidden" aria-hidden="true">
+    <button id="closeMenuBtn" class="sheet-backdrop" aria-label="Cerrar menú"></button>
+    <aside class="sheet-panel">
+      <div class="sheet-head"><div><span>PANEL DEL CONDUCTOR</span><h2>Herramientas</h2></div><button id="closeMenuX" class="sheet-close">×</button></div>
+      <button id="menuTeams" class="sheet-item"><b>👥</b><span><strong>Editar equipos</strong><small>Nombres y marcadores</small></span><em>›</em></button>
+      <button id="menuFast" class="sheet-item"><b>⚡</b><span><strong>Dinero rápido</strong><small>5 preguntas · 2 participantes</small></span><em>›</em></button>
+      <a href="/public" target="_blank" rel="noopener" class="sheet-item"><b>📺</b><span><strong>Abrir tablero público</strong><small>TV o proyector</small></span><em>↗</em></a>
+      <button id="menuBank" class="sheet-item"><b>📚</b><span><strong>Banco de preguntas</strong><small>Importar Excel e historial</small></span><em>›</em></button>
+      <button id="menuMaintenance" class="sheet-item"><b>⚙️</b><span><strong>Partida y marcador</strong><small>Correcciones y reinicio</small></span><em>›</em></button>
+      <div class="sheet-credit">100 Mexicanos Dijeron<br><span>Desarrollado por Carlos Rivas</span></div>
+    </aside>
+  </div>
+
+  <!-- MODAL EQUIPOS -->
+  <div id="teamsModal" class="host-modal hidden">
+    <div class="modal-card">
+      <div class="modal-head"><h2>Equipos y marcador</h2><button data-close-modal="teamsModal">×</button></div>
+      <label>Equipo 1</label><input id="team1EditName" type="text" maxlength="40" />
+      <div class="modal-score-row"><input id="team1ScoreInput" type="number" min="0" /><button id="saveTeam1Edit" class="host-secondary">GUARDAR EQUIPO 1</button></div>
+      <label>Equipo 2</label><input id="team2EditName" type="text" maxlength="40" />
+      <div class="modal-score-row"><input id="team2ScoreInput" type="number" min="0" /><button id="saveTeam2Edit" class="host-secondary">GUARDAR EQUIPO 2</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL BANCO -->
+  <div id="bankModal" class="host-modal hidden">
+    <div class="modal-card">
+      <div class="modal-head"><h2>Banco de preguntas</h2><button data-close-modal="bankModal">×</button></div>
+      <p class="host-muted">Importa un Excel con columnas ID, Pregunta, Respuesta y Puntos.</p>
+      <input id="xlsxInput" type="file" accept=".xlsx" />
+      <button id="importBtn" class="host-primary host-wide">IMPORTAR .XLSX</button>
+      <div id="importMsg" class="notice hidden"></div>
+      <div class="modal-divider"></div>
+      <div class="usage-modal-stat"><span>Preguntas disponibles</span><strong id="usageModalCounter">0</strong></div>
+      <button id="restoreDemoBtn" class="host-secondary host-wide">RESTAURAR EJEMPLOS</button>
+      <button id="resetUsageBtn" class="host-danger-soft host-wide">REINICIAR HISTORIAL DE USADAS</button>
+    </div>
+  </div>
+
+  <!-- MODAL MANTENIMIENTO -->
+  <div id="maintenanceModal" class="host-modal hidden">
+    <div class="modal-card">
+      <div class="modal-head"><h2>Partida y mantenimiento</h2><button data-close-modal="maintenanceModal">×</button></div>
+      <button id="resetRoundBtn" class="host-secondary host-wide">REINICIAR RONDA ACTUAL</button>
+      <button id="newGameBtn" class="host-danger-soft host-wide">NUEVA PARTIDA · MARCADORES A CERO</button>
+    </div>
+  </div>
+
+  <div id="actionToast" class="action-toast">Listo.</div>
   <script src="/static/control.js"></script>
 </body>
 </html>
