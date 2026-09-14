@@ -12,7 +12,8 @@ const sounds = {
   strike: $('#soundError'),
   faceoff_miss: $('#soundError'),
   award: $('#soundVictory'),
-  timer_timeout: $('#soundTimeout')
+  timer_timeout: $('#soundTimeout'),
+  game_finished: $('#soundVictory')
 };
 
 function play(kind) {
@@ -44,9 +45,31 @@ function showStrike(count) {
 
 function showMiss() {
   const el = $('#missOverlay');
+  if (!el) return;
+  el.classList.remove('show');
+  void el.offsetWidth;
   el.classList.add('show');
   clearTimeout(overlayTimer);
-  overlayTimer = setTimeout(() => el.classList.remove('show'), 1200);
+  overlayTimer = setTimeout(() => el.classList.remove('show'), 1500);
+}
+
+function renderWinner(s) {
+  const overlay = $('#winnerOverlay');
+  if (!overlay) return;
+  const active = Boolean(s.game_over);
+  overlay.classList.toggle('show', active);
+  if (!active) return;
+  const scores = (s.teams || []).map(t => Number(t.score || 0));
+  if (s.winner === 0 || s.winner === 1) {
+    const w = s.teams[s.winner];
+    $('#winnerKicker').textContent = '¡FELICIDADES!';
+    $('#winnerName').textContent = w?.name || '';
+    $('#winnerScore').textContent = String(w?.score ?? 0);
+  } else {
+    $('#winnerKicker').textContent = 'EMPATE';
+    $('#winnerName').textContent = `${s.teams?.[0]?.name || ''} · ${s.teams?.[1]?.name || ''}`;
+    $('#winnerScore').textContent = String(scores[0] ?? 0);
+  }
 }
 
 function eventText(e, state) {
@@ -146,6 +169,7 @@ function render(s) {
   $('#multiplier').style.visibility = isFast ? 'hidden' : 'visible';
   renderNormal(s);
   renderFast(s);
+  renderWinner(s);
   handleEvents(s.events, s);
 }
 

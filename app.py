@@ -29,6 +29,7 @@ from game_logic import (
     fast_money_hide_all,
     fast_money_reveal,
     fast_money_totals,
+    finish_game,
     pause_timer,
     public_state,
     recompute_round_points,
@@ -59,14 +60,14 @@ HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", os.environ.get("CIEN_MEXICANOS_PORT", "8765")))
 HOSTED = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-APP_VERSION = "9.0.0"
+APP_VERSION = "10.0.0"
 
 SUPPORTED_ACTIONS = {
     "undo", "set_question", "start_round", "next_question", "set_multiplier",
     "set_control_team", "faceoff_miss", "reveal", "strike", "clear_strikes", "award",
     "team_name", "score", "timer_config", "timer_start", "timer_pause",
     "timer_reset", "screen_mode", "fast_update", "fast_reveal",
-    "fast_hide_all", "round_reset", "reset_usage", "new_game", "restore_demo",
+    "fast_hide_all", "round_reset", "reset_usage", "new_game", "restore_demo", "finish_game",
 }
 ACTION_ALIASES = {
     "faceoff_winner": "set_control_team",
@@ -308,6 +309,8 @@ class GameApp:
                     start_round(self.state, self.bank)
                     self.mark_current_question_used()
                 elif action == "next_question":
+                    if self.state.get("game_over"):
+                        raise UserError("La partida ya finalizó. Inicia una nueva partida para continuar.")
                     if not self.state.get("round_awarded") and self.state.get("round_phase") != "review":
                         raise UserError("Primero entrega los puntos y cierra la ronda actual.")
                     next_id = self.next_unused_question_id()
@@ -366,6 +369,8 @@ class GameApp:
                 elif action == "reset_usage":
                     self.usage = {}
                     add_event(self.state, "usage_reset")
+                elif action == "finish_game":
+                    finish_game(self.state)
                 elif action == "new_game":
                     current_bank = self.bank
                     next_event_id = int(self.state.get("next_event_id", 1))

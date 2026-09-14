@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css?v=9.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=10.0" />
 </head>
 <body class="public-body">
   <div id="activation" class="activation">
@@ -81,7 +81,23 @@
   </main>
 
   <div id="strikeOverlay" class="strike-overlay"><div id="overlayXs" class="xs"></div></div>
-  <div id="missOverlay" class="miss-overlay"><div class="miss-symbol" aria-hidden="true"></div><div class="miss-text">NO ESTÁ EN EL TABLERO</div></div>
+  <div id="missOverlay" class="miss-overlay" aria-live="assertive"><div class="miss-symbol" aria-hidden="true"></div><div class="miss-text">NO ESTÁ EN EL TABLERO</div></div>
+
+  <section id="winnerOverlay" class="winner-overlay" aria-live="assertive">
+    <div class="winner-rays" aria-hidden="true"></div>
+    <div class="winner-confetti" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="winner-final-card">
+      <div class="winner-mini-logo"><b>100</b><span>MEXICANOS<br>DIJERON</span></div>
+      <div id="winnerKicker" class="winner-kicker">¡FELICIDADES!</div>
+      <div id="winnerName" class="winner-name">NOMBRE</div>
+      <div class="winner-scoreline"><span>PUNTOS</span><strong id="winnerScore">0</strong></div>
+      <div class="winner-crown" aria-hidden="true">★</div>
+    </div>
+    <div class="winner-credit">Desarrollado por Carlos Rivas</div>
+  </section>
+
   <div class="footer-credit">Desarrollado por Carlos Rivas</div>
 
   <audio id="soundRoundStart" preload="auto"><source src="/static/sounds/iniciar_ronda.mp3" type="audio/mpeg"><source src="/static/sounds/acierto.wav" type="audio/wav"></audio>
@@ -89,6 +105,6 @@
   <audio id="soundError" preload="auto"><source src="/static/sounds/strike.mp3" type="audio/mpeg"><source src="/static/sounds/error.wav" type="audio/wav"></audio>
   <audio id="soundVictory" preload="auto"><source src="/static/sounds/ganar_ronda.mp3" type="audio/mpeg"><source src="/static/sounds/victoria.wav" type="audio/wav"></audio>
   <audio id="soundTimeout" preload="auto" src="/static/sounds/tiempo.wav"></audio>
-  <script src="/static/public.js?v=9.0"></script>
+  <script src="/static/public.js?v=10.0"></script>
 </body>
 </html>

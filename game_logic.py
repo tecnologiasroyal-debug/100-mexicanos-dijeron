@@ -43,6 +43,8 @@ def default_state() -> Dict[str, Any]:
         "round_phase": "ready",
         "control_team": None,
         "last_award": None,
+        "game_over": False,
+        "winner": None,
         "timer": {
             "duration": 30,
             "remaining": 30,
@@ -97,6 +99,13 @@ def sanitize_state(raw: Dict[str, Any] | None) -> Dict[str, Any]:
     except Exception:
         control_team = None
     base["control_team"] = control_team if control_team in (0, 1) else None
+    base["game_over"] = bool(base.get("game_over", False))
+    winner = base.get("winner")
+    try:
+        winner = int(winner) if winner is not None else None
+    except Exception:
+        winner = None
+    base["winner"] = winner if winner in (0, 1) else None
 
     timer = base.get("timer") if isinstance(base.get("timer"), dict) else {}
     duration = max(1, min(3600, int(timer.get("duration", 30) or 30)))
@@ -309,6 +318,19 @@ def award_round(state: Dict[str, Any], team_index: int, reason: str = "ronda") -
     return points
 
 
+def finish_game(state: Dict[str, Any]) -> int | None:
+    if state.get("game_over"):
+        raise ValueError("La partida ya fue finalizada.")
+    scores = [max(0, int(t.get("score", 0))) for t in state.get("teams", [])[:2]]
+    if len(scores) != 2:
+        raise ValueError("No se pudieron leer los marcadores.")
+    winner = None if scores[0] == scores[1] else (0 if scores[0] > scores[1] else 1)
+    state["game_over"] = True
+    state["winner"] = winner
+    add_event(state, "game_finished", winner=winner, scores=scores)
+    return winner
+
+
 def set_team_name(state: Dict[str, Any], team_index: int, name: str) -> None:
     team_index = int(team_index)
     if team_index not in (0, 1):
@@ -509,6 +531,8 @@ def public_state(state: Dict[str, Any], bank: List[Dict[str, Any]], now: float |
         "round_awarded": bool(state["round_awarded"]),
         "round_phase": str(state.get("round_phase", "ready")),
         "control_team": state.get("control_team"),
+        "game_over": bool(state.get("game_over", False)),
+        "winner": state.get("winner"),
         "timer": timer,
         "fast_money": {
             "target": int(state["fast_money"]["target"]),

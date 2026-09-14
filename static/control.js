@@ -1,5 +1,5 @@
-const CLIENT_VERSION = "9.0.0";
-const REQUIRED_BACKEND_ACTIONS = ["start_round","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo"];
+const CLIENT_VERSION = "10.0.0";
+const REQUIRED_BACKEND_ACTIONS = ["start_round","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo","finish_game"];
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 let token = sessionStorage.getItem('100mx_token') || '';
@@ -42,7 +42,7 @@ function assertBackendCompatible(data) {
   const missing = REQUIRED_BACKEND_ACTIONS.filter(x => !supported.has(x));
   if (serverVersion !== CLIENT_VERSION || missing.length) {
     const detail = !serverVersion
-      ? 'El servidor es anterior a V9.'
+      ? 'El servidor es anterior a V10.'
       : `Interfaz V${CLIENT_VERSION} / servidor V${serverVersion}.`;
     const miss = missing.length ? ` Faltan acciones: ${missing.join(', ')}.` : '';
     throw new Error(`${detail}${miss} Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py, luego pulsa Reload en PythonAnywhere.`);
@@ -51,7 +51,7 @@ function assertBackendCompatible(data) {
 function friendlyActionError(action, error) {
   const text = String(error?.message || error || 'Error desconocido');
   if (/Acción no reconocida/i.test(text) || (action === 'set_control_team' && /no reconocida/i.test(text))) {
-    return new Error('El panel V9 está cargado, pero PythonAnywhere sigue ejecutando un backend anterior. Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py y pulsa Reload.');
+    return new Error('El panel V10 está cargado, pero PythonAnywhere sigue ejecutando un backend anterior. Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py y pulsa Reload.');
   }
   return error instanceof Error ? error : new Error(text);
 }
@@ -224,6 +224,10 @@ function renderClose(data) {
   const awarded=Boolean(st.round_awarded);
   $('#awardArea').classList.toggle('hidden',awarded);
   $('#reviewArea').classList.toggle('hidden',!awarded);
+  if ($('#finishGameBtn')) {
+    $('#finishGameBtn').disabled = !awarded || Boolean(st.game_over);
+    $('#finishGameBtn').textContent = st.game_over ? 'JUEGO FINALIZADO ✓' : 'FINALIZAR JUEGO Y MOSTRAR GANADOR';
+  }
   if (awarded) {
     const a=st.last_award, team=a?st.teams[a.team]:null;
     $('#closeTitle').textContent='Ronda terminada';
@@ -355,6 +359,16 @@ $('#awardTeam1').onclick=()=>award(0); $('#awardTeam2').onclick=()=>award(1);
 $('#missingAnswers').onclick=e=>{const b=e.target.closest('[data-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.reveal)}).then(()=>message('Respuesta faltante descubierta.')).catch(x=>message(x.message,true));};
 $('#revealNextMissingBtn').onclick=async()=>{const st=current?.state,q=questionForState(current);const next=q?.answers.findIndex((_,i)=>!st.revealed.includes(i))??-1;if(next<0)return message('Ya se mostraron todas.');try{await apiAction('reveal',{index:next});message('Respuesta faltante descubierta.');}catch(e){message(e.message,true);}};
 $('#nextQuestionBtn').onclick=()=>apiAction('next_question').then(()=>{setStep(2);message('Siguiente ronda preparada.');}).catch(e=>message(e.message,true));
+$('#finishGameBtn').onclick=async()=>{
+  if(!current?.state?.round_awarded) return message('Primero entrega los puntos de la ronda.',true);
+  if(!confirm('¿Finalizar el juego y mostrar al ganador en el tablero?')) return;
+  try{
+    await apiAction('finish_game');
+    const st=current.state;
+    if(st.winner===0||st.winner===1) message(`Pantalla final mostrada: ${st.teams[st.winner].name}.`);
+    else message('Pantalla final mostrada: empate.');
+  }catch(e){message(e.message,true);}
+};
 $('#undoBtn').onclick=()=>apiAction('undo').then(()=>{const st=current.state;setStep(st.round_awarded||st.round_phase==='review'?5:st.round_phase==='active'?4:st.round_phase==='faceoff'?3:2);message('Última acción deshecha.');}).catch(e=>message(e.message,true));
 $('#boardBtn').onclick=()=>window.open('/public','_blank');
 

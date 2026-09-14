@@ -5,24 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#061b40" />
   <title>Conductor — 100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css?v=9.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=10.0" />
 </head>
 <body class="app-body control-body host-v5">
-  <section id="loginView" class="host-login">
-    <div class="host-login-card">
-      <div class="show-logo show-logo-xl" aria-label="100 Mexicanos Dijeron">
-        <span class="logo-100">100</span>
-        <span class="logo-mex">MEXICANOS</span>
-        <span class="logo-dijeron">DIJERON</span>
+  <section id="loginView" class="host-login login-v10">
+    <div class="host-login-card login-v10-card">
+      <div class="login-v10-brand" aria-label="100 Mexicanos Dijeron">
+        <div class="login-v10-100">100</div>
+        <div class="login-v10-copy"><strong>MEXICANOS</strong><span>DIJERON</span></div>
       </div>
-      <p class="host-kicker">PANEL DEL CONDUCTOR</p>
-      <h1>Listo para jugar</h1>
-      <p class="host-muted">Ingresa el código privado para controlar el tablero.</p>
-      <label for="pinInput">Código de acceso</label>
-      <input id="pinInput" class="host-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" />
-      <button id="loginBtn" class="host-primary host-big">ENTRAR AL JUEGO</button>
+      <div class="login-v10-kicker">PANEL DEL CONDUCTOR</div>
+      <h1>Acceso al juego</h1>
+      <p class="host-muted">Escribe tu código privado para comenzar.</p>
+      <div class="login-v10-field">
+        <label for="pinInput">CÓDIGO DE ACCESO</label>
+        <input id="pinInput" class="host-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" enterkeyhint="go" />
+      </div>
+      <button id="loginBtn" class="host-primary host-big">ENTRAR</button>
       <div id="loginMsg" class="notice error hidden"></div>
-      <div class="host-credit">Desarrollado por Carlos Rivas · V9</div>
+      <div class="host-credit">Desarrollado por Carlos Rivas · V10</div>
     </div>
   </section>
 
@@ -243,6 +244,7 @@
             <div id="missingAnswers" class="missing-answers"></div>
             <button id="revealNextMissingBtn" class="host-purple host-next">DESCUBRIR SIGUIENTE RESPUESTA</button>
             <button id="nextQuestionBtn" class="host-primary host-next">PREPARAR SIGUIENTE RONDA <span>→</span></button>
+            <button id="finishGameBtn" class="finish-game-btn">FINALIZAR JUEGO Y MOSTRAR GANADOR</button>
           </div>
         </section>
       </main>
@@ -256,7 +258,7 @@
         </div>
         <button id="boardBtn" class="host-bottom-action">▣ <span>TABLERO</span></button>
       </div>
-      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V9</div>
+      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V10</div>
     </div>
 
     <!-- DINERO RÁPIDO COMO MODO SEPARADO -->
@@ -322,6 +324,6 @@
   </div>
 
   <div id="actionToast" class="action-toast">Listo.</div>
-  <script src="/static/control.js?v=9.0"></script>
+  <script src="/static/control.js?v=10.0"></script>
 </body>
 </html>
