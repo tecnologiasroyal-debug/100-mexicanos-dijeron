@@ -1,0 +1,45 @@
+100 MEXICANOS DIJERON — V4 COMPLETO
+
+ESTE ZIP ES EL PROYECTO COMPLETO, NO SOLO UN PARCHE.
+
+INCLUYE
+- Tablero público con diseño azul/dorado y título 100 Mexicanos Dijeron.
+- STRIKES en lugar de Errores.
+- Control móvil rediseñado con colores y accesos rápidos.
+- INICIAR RONDA.
+- Multiplicadores x1, x2 y x3.
+- Entrega única de puntos y deshacer.
+- Después de entregar la ronda NO salta automáticamente: puedes revelar respuestas faltantes sin modificar el marcador.
+- Botón SIGUIENTE PREGUNTA cuando el conductor decida.
+- Temporizador y Dinero rápido.
+- Importación de preguntas desde Excel .xlsx.
+- Historial persistente de preguntas usadas y avisos de banco bajo.
+- Plantilla de Excel y preguntas de demostración.
+- Configuración para PythonAnywhere.
+- Tus 4 MP3 reales integrados:
+  * iniciar_ronda.mp3
+  * respuesta_correcta.mp3
+  * strike.mp3
+  * ganar_ronda.mp3
+
+ACTUALIZAR GITHUB + PYTHONANYWHERE
+1) Descomprime este ZIP.
+2) En GitHub abre el repositorio 100-mexicanos-dijeron.
+3) Add file > Upload files.
+4) Sube TODO EL CONTENIDO de la carpeta 100_Mexicanos_Dijeron_COMPLETO_V4, reemplazando los archivos existentes.
+5) Commit changes.
+6) En PythonAnywhere abre Consoles > Bash.
+7) Ejecuta:
+
+   cd ~/100-mexicanos-dijeron
+   git pull
+
+8) Ve a Web y pulsa Reload rivaspruebas.pythonanywhere.com.
+9) Recarga con Ctrl+F5 (Windows) o Cmd+Shift+R (Mac) para evitar caché.
+
+RUTAS
+- Tablero: https://rivaspruebas.pythonanywhere.com/public
+- Control: https://rivaspruebas.pythonanywhere.com/control
+
+NOTA SOBRE EL BANCO DE 500 PREGUNTAS
+El motor de historial de usadas ya está incluido. Las 500 preguntas definitivas NO se incorporaron todavía porque se acordó mostrarlas/revisarlas antes de agregarlas.

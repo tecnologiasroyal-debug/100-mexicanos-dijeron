@@ -1,0 +1,26 @@
+100 MEXICANOS DIJERON — PYTHONANYWHERE
+======================================
+
+Esta versión incluye pythonanywhere_wsgi.py para ejecutar el juego como una aplicación WSGI.
+
+Configuración resumida:
+1) Clona el repositorio en una consola Bash de PythonAnywhere.
+2) Web > Add a new web app > Manual configuration > Python 3.13 (o la versión disponible).
+3) Edita el archivo WSGI de PythonAnywhere y usa:
+
+import os
+import sys
+
+os.environ['CONTROL_PIN'] = 'TU_CODIGO_DE_6_DIGITOS'
+path = '/home/TU_USUARIO/100-mexicanos-dijeron'
+if path not in sys.path:
+    sys.path.insert(0, path)
+
+from pythonanywhere_wsgi import application
+
+4) Guarda y pulsa Reload en la pestaña Web.
+5) Abre https://TU_USUARIO.pythonanywhere.com/public
+6) Control: https://TU_USUARIO.pythonanywhere.com/control
+7) Configuración/QR: https://TU_USUARIO.pythonanywhere.com/setup?code=TU_CODIGO_DE_6_DIGITOS
+
+No requiere pip ni paquetes externos.

@@ -41,6 +41,7 @@ from game_logic import (
     set_team_name,
     set_team_score,
     start_timer,
+    start_round,
     update_fast_money,
 )
 
@@ -51,6 +52,7 @@ DEMO_FILE = DATA_DIR / "demo_questions.json"
 BANK_FILE = DATA_DIR / "question_bank.json"
 STATE_FILE = DATA_DIR / "game_state.json"
 CONFIG_FILE = DATA_DIR / "config.json"
+USAGE_FILE = DATA_DIR / "question_usage.json"
 HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", os.environ.get("CIEN_MEXICANOS_PORT", "8765")))
 HOSTED = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
@@ -109,6 +111,28 @@ def load_or_create_config() -> Dict[str, Any]:
     return cfg
 
 
+def load_usage() -> Dict[str, str]:
+    raw = load_json(USAGE_FILE, {"used": {}})
+    used = raw.get("used", {}) if isinstance(raw, dict) else {}
+    if not isinstance(used, dict):
+        used = {}
+    return {str(k): str(v) for k, v in used.items() if str(k).strip()}
+
+
+def usage_warning(remaining: int, total: int) -> str:
+    if total <= 0:
+        return "No hay preguntas cargadas."
+    if remaining <= 0:
+        return "Ya no quedan preguntas sin usar. Puedes cargar más o reiniciar el historial."
+    if remaining <= 10:
+        return f"ATENCIÓN: solo quedan {remaining} preguntas sin usar."
+    if remaining <= 25:
+        return f"Quedan {remaining} preguntas sin usar."
+    if remaining <= 50:
+        return f"Quedan {remaining} preguntas disponibles; conviene preparar un banco nuevo pronto."
+    return ""
+
+
 def validate_bank(bank: Any) -> List[Dict[str, Any]]:
     if not isinstance(bank, list):
         raise ValueError("Banco de preguntas inválido.")
@@ -150,30 +174,34 @@ class GameApp:
         except Exception:
             self.bank = demo
         self.state = sanitize_state(load_json(STATE_FILE, default_state()))
+        self.usage = load_usage()
         if not any(str(q["id"]) == str(self.state.get("current_question_id")) for q in self.bank):
             self.state["current_question_id"] = str(self.bank[0]["id"])
             self.state["revealed"] = []
             self.state["round_points"] = 0
             self.state["round_awarded"] = False
-        recompute_round_points(self.state, self.bank)
-        self.history: deque[Tuple[Dict[str, Any], List[Dict[str, Any]]]] = deque(maxlen=60)
+        if not self.state.get("round_awarded"):
+            recompute_round_points(self.state, self.bank)
+        self.history: deque[Tuple[Dict[str, Any], List[Dict[str, Any]], Dict[str, str]]] = deque(maxlen=60)
         self.session_token = secrets.token_urlsafe(32)
         self.save_all()
 
     def save_all(self) -> None:
         atomic_json_write(BANK_FILE, self.bank)
         atomic_json_write(STATE_FILE, self.state)
+        atomic_json_write(USAGE_FILE, {"used": self.usage})
 
     def snapshot(self) -> None:
-        self.history.append((copy.deepcopy(self.state), copy.deepcopy(self.bank)))
+        self.history.append((copy.deepcopy(self.state), copy.deepcopy(self.bank), copy.deepcopy(self.usage)))
 
     def undo(self) -> None:
         if not self.history:
             raise UserError("No hay acciones para deshacer.")
         current_next_id = int(self.state.get("next_event_id", 1))
-        state, bank = self.history.pop()
+        state, bank, usage = self.history.pop()
         self.state = sanitize_state(state)
         self.bank = validate_bank(bank)
+        self.usage = {str(k): str(v) for k, v in usage.items()}
         self.state["next_event_id"] = max(current_next_id, int(self.state.get("next_event_id", 1)))
         add_event(self.state, "undo")
         self.save_all()
@@ -184,12 +212,26 @@ class GameApp:
 
     def control_payload(self) -> Dict[str, Any]:
         self.refresh_timer_if_needed()
+        questions = copy.deepcopy(self.bank)
+        bank_ids = {str(q.get("id")) for q in questions}
+        used_ids = {qid for qid in self.usage if qid in bank_ids}
+        for q in questions:
+            qid = str(q.get("id"))
+            q["used"] = qid in used_ids
+            q["used_at"] = self.usage.get(qid)
+        remaining = max(0, len(questions) - len(used_ids))
         return {
             "state": copy.deepcopy(self.state),
-            "questions": copy.deepcopy(self.bank),
+            "questions": questions,
             "undo_available": bool(self.history),
             "fast_money_warnings": fast_money_duplicate_warnings(self.state),
             "fast_money_totals": fast_money_totals(self.state, revealed_only=False),
+            "question_usage": {
+                "total": len(questions),
+                "used": len(used_ids),
+                "remaining": remaining,
+                "warning": usage_warning(remaining, len(questions)),
+            },
         }
 
     def public_payload(self) -> Dict[str, Any]:
@@ -201,8 +243,26 @@ class GameApp:
         self.state["round_points"] = 0
         self.state["errors"] = 0
         self.state["round_awarded"] = False
+        self.state["round_phase"] = "ready"
         self.state["last_award"] = None
         add_event(self.state, "round_reset")
+
+    def mark_current_question_used(self) -> None:
+        qid = str(self.state.get("current_question_id") or "")
+        if qid and qid not in self.usage:
+            self.usage[qid] = time.strftime("%Y-%m-%dT%H:%M:%S")
+
+    def next_unused_question_id(self) -> str:
+        if not self.bank:
+            raise UserError("No hay preguntas cargadas.")
+        current = str(self.state.get("current_question_id") or "")
+        ids = [str(q.get("id")) for q in self.bank]
+        start = ids.index(current) + 1 if current in ids else 0
+        ordered = ids[start:] + ids[:start]
+        for qid in ordered:
+            if qid not in self.usage:
+                return qid
+        raise UserError("Ya no quedan preguntas sin usar. Reinicia el historial o carga un banco nuevo.")
 
     def action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         with self.lock:
@@ -213,7 +273,15 @@ class GameApp:
             self.snapshot()
             try:
                 if action == "set_question":
-                    set_question(self.state, self.bank, str(payload.get("question_id", "")))
+                    qid = str(payload.get("question_id", ""))
+                    if qid in self.usage and qid != str(self.state.get("current_question_id") or ""):
+                        raise UserError("Esa pregunta ya fue usada. Elige una disponible o reinicia el historial.")
+                    set_question(self.state, self.bank, qid)
+                elif action == "start_round":
+                    start_round(self.state, self.bank)
+                    self.mark_current_question_used()
+                elif action == "next_question":
+                    set_question(self.state, self.bank, self.next_unused_question_id())
                 elif action == "set_multiplier":
                     set_multiplier(self.state, self.bank, int(payload.get("multiplier", 1)))
                 elif action == "reveal":
@@ -250,16 +318,22 @@ class GameApp:
                     fast_money_hide_all(self.state)
                 elif action == "round_reset":
                     self._reset_round()
+                elif action == "reset_usage":
+                    self.usage = {}
+                    add_event(self.state, "usage_reset")
                 elif action == "new_game":
                     current_bank = self.bank
                     next_event_id = int(self.state.get("next_event_id", 1))
+                    old_current = str(self.state.get("current_question_id") or "")
                     self.state = default_state()
                     self.state["next_event_id"] = next_event_id
-                    self.state["current_question_id"] = str(current_bank[0]["id"])
+                    available = [str(q["id"]) for q in current_bank if str(q["id"]) not in self.usage]
+                    self.state["current_question_id"] = available[0] if available else (old_current or str(current_bank[0]["id"]))
                     add_event(self.state, "new_game")
                 elif action == "restore_demo":
                     demo = validate_bank(load_json(DEMO_FILE, []))
                     self.bank = demo
+                    self.usage = {}
                     self.state["current_question_id"] = str(demo[0]["id"])
                     self._reset_round()
                     add_event(self.state, "bank_restored")
@@ -288,6 +362,7 @@ class GameApp:
         with self.lock:
             self.snapshot()
             self.bank = questions
+            self.usage = {qid: ts for qid, ts in self.usage.items() if qid in {str(q["id"]) for q in questions}}
             self.state["current_question_id"] = str(questions[0]["id"])
             self._reset_round()
             add_event(self.state, "bank_imported", count=len(questions))

@@ -1,0 +1,11 @@
+100 MEXICANOS DIJERON — V4 COMPLETO
+Fecha: 14/09/2026
+
+Incluye los cuatro MP3 proporcionados por el usuario:
+- iniciar_ronda.mp3
+- respuesta_correcta.mp3
+- strike.mp3
+- ganar_ronda.mp3
+
+También incluye el tablero, control móvil, STRIKES, revisión de respuestas faltantes,
+historial de preguntas usadas, importación Excel y configuración PythonAnywhere.

@@ -28,6 +28,7 @@ class SyncHttpTests(unittest.TestCase):
             patch.object(app_module, "BANK_FILE", root / "bank.json"),
             patch.object(app_module, "STATE_FILE", root / "state.json"),
             patch.object(app_module, "CONFIG_FILE", root / "config.json"),
+            patch.object(app_module, "USAGE_FILE", root / "usage.json"),
         ]
         for p in self.patchers: p.start()
         self.old_app = app_module.APP
@@ -96,6 +97,20 @@ class SyncHttpTests(unittest.TestCase):
         self.assertEqual(undone["state"]["teams"][0]["score"], 0)
         self.assertFalse(undone["state"]["round_awarded"])
         self.assertEqual(undone["state"]["round_points"], 40)
+
+
+    def test_used_question_is_persistent_and_post_award_reveal_does_not_rescore(self):
+        login = self.request_json("/api/login", method="POST", data={"code": app_module.APP.config["control_pin"]})
+        token = login["token"]
+        started = self.request_json("/api/action", method="POST", token=token, data={"action":"start_round","payload":{}})["data"]
+        self.assertEqual(started["question_usage"]["used"], 1)
+        self.request_json("/api/action", method="POST", token=token, data={"action":"reveal","payload":{"index":0}})
+        awarded = self.request_json("/api/action", method="POST", token=token, data={"action":"award","payload":{"team":0,"reason":"robo"}})["data"]
+        self.assertEqual(awarded["state"]["round_points"], 40)
+        after = self.request_json("/api/action", method="POST", token=token, data={"action":"reveal","payload":{"index":1}})["data"]
+        self.assertEqual(after["state"]["round_points"], 40)
+        self.assertEqual(after["state"]["teams"][0]["score"], 40)
+        self.assertEqual(after["question_usage"]["remaining"], 0)
 
     def test_http_excel_import_replaces_bank(self):
         login = self.request_json("/api/login", method="POST", data={"code": app_module.APP.config["control_pin"]})

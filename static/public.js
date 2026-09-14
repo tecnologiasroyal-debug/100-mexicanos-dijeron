@@ -6,6 +6,7 @@ let overlayTimer = null;
 
 const $ = s => document.querySelector(s);
 const sounds = {
+  round_start: $('#soundRoundStart'),
   reveal: $('#soundCorrect'),
   fast_reveal: $('#soundCorrect'),
   strike: $('#soundError'),

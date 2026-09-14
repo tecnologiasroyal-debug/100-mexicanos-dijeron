@@ -39,6 +39,7 @@ def default_state() -> Dict[str, Any]:
         "round_points": 0,
         "errors": 0,
         "round_awarded": False,
+        "round_phase": "ready",
         "last_award": None,
         "timer": {
             "duration": 30,
@@ -82,6 +83,8 @@ def sanitize_state(raw: Dict[str, Any] | None) -> Dict[str, Any]:
     base["errors"] = min(3, max(0, int(base.get("errors", 0) or 0)))
     base["round_points"] = max(0, int(base.get("round_points", 0) or 0))
     base["round_awarded"] = bool(base.get("round_awarded", False))
+    phase = str(base.get("round_phase", "review" if base["round_awarded"] else "ready"))
+    base["round_phase"] = phase if phase in ("ready", "active", "review") else ("review" if base["round_awarded"] else "ready")
 
     timer = base.get("timer") if isinstance(base.get("timer"), dict) else {}
     duration = max(1, min(3600, int(timer.get("duration", 30) or 30)))
@@ -161,6 +164,7 @@ def set_question(state: Dict[str, Any], bank: List[Dict[str, Any]], question_id:
     state["round_points"] = 0
     state["errors"] = 0
     state["round_awarded"] = False
+    state["round_phase"] = "ready"
     state["last_award"] = None
     add_event(state, "question_changed", question_id=str(question["id"]))
 
@@ -190,9 +194,19 @@ def recompute_round_points(state: Dict[str, Any], bank: List[Dict[str, Any]]) ->
     return state["round_points"]
 
 
+def start_round(state: Dict[str, Any], bank: List[Dict[str, Any]]) -> None:
+    question = get_question(bank, state.get("current_question_id"))
+    if not question:
+        raise ValueError("Selecciona una pregunta primero.")
+    if state.get("round_awarded") or state.get("round_phase") == "review":
+        raise ValueError("La ronda ya terminó. Pasa a la siguiente pregunta.")
+    if state.get("round_phase") == "active":
+        raise ValueError("La ronda ya está en curso.")
+    state["round_phase"] = "active"
+    add_event(state, "round_start", question_id=str(question["id"]))
+
+
 def reveal_answer(state: Dict[str, Any], bank: List[Dict[str, Any]], index: int) -> int:
-    if state.get("round_awarded"):
-        raise ValueError("La ronda ya fue entregada. Usa Deshacer si fue accidental.")
     question = get_question(bank, state.get("current_question_id"))
     if not question:
         raise ValueError("Selecciona una pregunta primero.")
@@ -204,8 +218,12 @@ def reveal_answer(state: Dict[str, Any], bank: List[Dict[str, Any]], index: int)
         return state.get("round_points", 0)
     state.setdefault("revealed", []).append(index)
     state["revealed"] = sorted(set(state["revealed"]))
-    total = recompute_round_points(state, bank)
-    add_event(state, "reveal", index=index)
+
+    # Después de entregar la ronda permitimos descubrir las respuestas faltantes,
+    # pero esos puntos ya no alteran la bolsa ni el marcador adjudicado.
+    after_award = bool(state.get("round_awarded"))
+    total = int(state.get("round_points", 0)) if after_award else recompute_round_points(state, bank)
+    add_event(state, "reveal", index=index, after_award=after_award)
     return total
 
 
@@ -231,6 +249,7 @@ def award_round(state: Dict[str, Any], team_index: int, reason: str = "ronda") -
     points = int(state.get("round_points", 0))
     state["teams"][team_index]["score"] = max(0, int(state["teams"][team_index].get("score", 0)) + points)
     state["round_awarded"] = True
+    state["round_phase"] = "review"
     state["last_award"] = {"team": team_index, "points": points, "reason": str(reason or "ronda")[:30]}
     add_event(state, "award", team=team_index, points=points, reason=str(reason or "ronda")[:30])
     return points
@@ -433,6 +452,7 @@ def public_state(state: Dict[str, Any], bank: List[Dict[str, Any]], now: float |
         "round_points": int(state["round_points"]),
         "errors": int(state["errors"]),
         "round_awarded": bool(state["round_awarded"]),
+        "round_phase": str(state.get("round_phase", "ready")),
         "timer": timer,
         "fast_money": {
             "target": int(state["fast_money"]["target"]),

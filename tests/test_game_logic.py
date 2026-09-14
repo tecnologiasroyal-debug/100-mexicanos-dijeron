@@ -13,6 +13,7 @@ from game_logic import (
     set_multiplier,
     set_question,
     start_timer,
+    start_round,
     timer_remaining,
 )
 
@@ -53,6 +54,23 @@ class GameLogicTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             award_round(self.state, 1, "robo")
         self.assertEqual(self.state["teams"][1]["score"], 0)
+
+    def test_start_round_sets_phase_and_event(self):
+        start_round(self.state, BANK)
+        self.assertEqual(self.state["round_phase"], "active")
+        self.assertEqual(self.state["events"][-1]["type"], "round_start")
+
+    def test_reveal_after_award_does_not_change_awarded_points(self):
+        start_round(self.state, BANK)
+        reveal_answer(self.state, BANK, 0)
+        award_round(self.state, 0, "robo")
+        self.assertEqual(self.state["round_points"], 30)
+        self.assertEqual(self.state["teams"][0]["score"], 30)
+        reveal_answer(self.state, BANK, 1)
+        self.assertEqual(self.state["round_points"], 30)
+        self.assertEqual(self.state["teams"][0]["score"], 30)
+        self.assertIn(1, self.state["revealed"])
+        self.assertTrue(self.state["events"][-1].get("after_award"))
 
     def test_timer_start_pause_and_timeout(self):
         configure_timer(self.state, 10)

@@ -17,6 +17,7 @@
   "round_points": 0,
   "errors": 0,
   "round_awarded": false,
+  "round_phase": "ready",
   "last_award": null,
   "timer": {
     "duration": 30,
