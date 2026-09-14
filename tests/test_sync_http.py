@@ -69,6 +69,8 @@ class SyncHttpTests(unittest.TestCase):
         self.assertIn("SECRETO_UNO", raw_control)
         self.assertIn("SECRETO_DOS", raw_control)
 
+        self.request_json("/api/action", method="POST", token=token, data={"action":"start_round","payload":{}})
+        self.request_json("/api/action", method="POST", token=token, data={"action":"set_control_team","payload":{"team":0}})
         self.request_json("/api/action", method="POST", token=token, data={"action":"reveal","payload":{"index":0}})
         public_after = self.request_json("/api/public/state")["data"]
         raw_after = json.dumps(public_after, ensure_ascii=False)

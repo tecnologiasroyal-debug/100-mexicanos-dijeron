@@ -751,3 +751,7 @@ input:focus, select:focus { border-color: #2472ce; box-shadow: 0 0 0 3px rgba(36
   .faceoff-winner-grid { grid-template-columns:1fr; }
   .faceoff-winner-grid .winner-btn { min-height:68px; }
 }
+
+
+/* V8: aviso visible cuando interfaz y backend no coinciden */
+.compatibility-banner{position:sticky;top:0;z-index:9999;background:#8b1010;color:#fff;border-bottom:2px solid #ffcf4a;padding:12px 16px;font-weight:800;text-align:center;line-height:1.35;box-shadow:0 4px 14px rgba(0,0,0,.35)}

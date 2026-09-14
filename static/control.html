@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#061b40" />
   <title>Conductor — 100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css?v=7.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=8.0" />
 </head>
 <body class="app-body control-body host-v5">
   <section id="loginView" class="host-login">
@@ -22,11 +22,12 @@
       <input id="pinInput" class="host-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" />
       <button id="loginBtn" class="host-primary host-big">ENTRAR AL JUEGO</button>
       <div id="loginMsg" class="notice error hidden"></div>
-      <div class="host-credit">Desarrollado por Carlos Rivas</div>
+      <div class="host-credit">Desarrollado por Carlos Rivas · V8</div>
     </div>
   </section>
 
   <div id="appView" class="hidden host-app">
+    <div id="compatibilityBanner" class="compatibility-banner hidden"></div>
     <header class="host-header">
       <div class="show-logo show-logo-sm" aria-label="100 Mexicanos Dijeron">
         <span class="logo-100">100</span>
@@ -247,7 +248,7 @@
         </div>
         <button id="boardBtn" class="host-bottom-action">▣ <span>TABLERO</span></button>
       </div>
-      <div class="host-credit-fixed">Desarrollado por Carlos Rivas</div>
+      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V8</div>
     </div>
 
     <!-- DINERO RÁPIDO COMO MODO SEPARADO -->
@@ -313,6 +314,6 @@
   </div>
 
   <div id="actionToast" class="action-toast">Listo.</div>
-  <script src="/static/control.js?v=7.0"></script>
+  <script src="/static/control.js?v=8.0"></script>
 </body>
 </html>

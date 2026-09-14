@@ -38,17 +38,18 @@ class GameLogicTests(unittest.TestCase):
         set_question(self.state, BANK, "T1")
 
     def test_scoring_and_multiplier(self):
+        set_multiplier(self.state, BANK, 3)
+        start_round(self.state, BANK)
+        set_control_team(self.state, 0)
         reveal_answer(self.state, BANK, 0)
         reveal_answer(self.state, BANK, 1)
-        self.assertEqual(self.state["round_points"], 50)
-        set_multiplier(self.state, BANK, 2)
-        self.assertEqual(self.state["round_points"], 100)
-        set_multiplier(self.state, BANK, 3)
         self.assertEqual(self.state["round_points"], 150)
 
     def test_award_can_only_happen_once(self):
-        reveal_answer(self.state, BANK, 0)
         set_multiplier(self.state, BANK, 2)
+        start_round(self.state, BANK)
+        set_control_team(self.state, 0)
+        reveal_answer(self.state, BANK, 0)
         points = award_round(self.state, 0, "ronda")
         self.assertEqual(points, 60)
         self.assertEqual(self.state["teams"][0]["score"], 60)

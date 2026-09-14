@@ -58,6 +58,21 @@ HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", os.environ.get("CIEN_MEXICANOS_PORT", "8765")))
 HOSTED = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+APP_VERSION = "8.0.0"
+
+SUPPORTED_ACTIONS = {
+    "undo", "set_question", "start_round", "next_question", "set_multiplier",
+    "set_control_team", "reveal", "strike", "clear_strikes", "award",
+    "team_name", "score", "timer_config", "timer_start", "timer_pause",
+    "timer_reset", "screen_mode", "fast_update", "fast_reveal",
+    "fast_hide_all", "round_reset", "reset_usage", "new_game", "restore_demo",
+}
+ACTION_ALIASES = {
+    "faceoff_winner": "set_control_team",
+    "duel_winner": "set_control_team",
+    "choose_control_team": "set_control_team",
+    "set_family_control": "set_control_team",
+}
 
 
 class UserError(Exception):
@@ -222,6 +237,8 @@ class GameApp:
             q["used_at"] = self.usage.get(qid)
         remaining = max(0, len(questions) - len(used_ids))
         return {
+            "app_version": APP_VERSION,
+            "supported_actions": sorted(SUPPORTED_ACTIONS),
             "state": copy.deepcopy(self.state),
             "questions": questions,
             "undo_available": bool(self.history),
@@ -237,7 +254,10 @@ class GameApp:
 
     def public_payload(self) -> Dict[str, Any]:
         self.refresh_timer_if_needed()
-        return public_state(self.state, self.bank)
+        payload = public_state(self.state, self.bank)
+        if isinstance(payload, dict):
+            payload["app_version"] = APP_VERSION
+        return payload
 
     def _reset_round(self) -> None:
         self.state["revealed"] = []
@@ -268,6 +288,8 @@ class GameApp:
 
     def action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         with self.lock:
+            action = str(action or "").strip()
+            action = ACTION_ALIASES.get(action, action)
             if action == "undo":
                 self.undo()
                 return self.control_payload()
@@ -275,6 +297,8 @@ class GameApp:
             self.snapshot()
             try:
                 if action == "set_question":
+                    if self.state.get("round_phase") != "ready" or self.state.get("round_awarded"):
+                        raise UserError("No puedes cambiar de pregunta durante una ronda. Termínala o usa Reiniciar ronda.")
                     qid = str(payload.get("question_id", ""))
                     if qid in self.usage and qid != str(self.state.get("current_question_id") or ""):
                         raise UserError("Esa pregunta ya fue usada. Elige una disponible o reinicia el historial.")
@@ -283,6 +307,8 @@ class GameApp:
                     start_round(self.state, self.bank)
                     self.mark_current_question_used()
                 elif action == "next_question":
+                    if not self.state.get("round_awarded") and self.state.get("round_phase") != "review":
+                        raise UserError("Primero entrega los puntos y cierra la ronda actual.")
                     set_question(self.state, self.bank, self.next_unused_question_id())
                 elif action == "set_multiplier":
                     set_multiplier(self.state, self.bank, int(payload.get("multiplier", 1)))
@@ -299,7 +325,10 @@ class GameApp:
                 elif action == "award":
                     if self.state.get("round_phase") != "active":
                         raise UserError("Primero elige qué equipo quedó en control de la ronda.")
-                    award_round(self.state, int(payload.get("team", -1)), str(payload.get("reason", "ronda")))
+                    reason = str(payload.get("reason", "ronda"))
+                    if reason not in ("ronda", "robo"):
+                        reason = "ronda"
+                    award_round(self.state, int(payload.get("team", -1)), reason)
                 elif action == "team_name":
                     set_team_name(self.state, int(payload.get("team", -1)), str(payload.get("name", "")))
                 elif action == "score":
@@ -443,6 +472,8 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/favicon.ico":
             return self._send(204, b"", "image/x-icon")
+        if path == "/api/version":
+            return self._json(200, {"ok": True, "data": {"app_version": APP_VERSION, "supported_actions": sorted(SUPPORTED_ACTIONS)}})
         if path == "/api/public/state":
             with APP.lock:
                 return self._json(200, {"ok": True, "data": APP.public_payload()})

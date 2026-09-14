@@ -178,6 +178,8 @@ def set_question(state: Dict[str, Any], bank: List[Dict[str, Any]], question_id:
 
 
 def set_multiplier(state: Dict[str, Any], bank: List[Dict[str, Any]], multiplier: int) -> None:
+    if state.get("round_phase") != "ready":
+        raise ValueError("El multiplicador se define antes de iniciar el duelo. Reinicia la ronda si necesitas cambiarlo.")
     multiplier = int(multiplier)
     if multiplier not in (1, 2, 3):
         raise ValueError("El multiplicador debe ser 1, 2 o 3.")
@@ -221,7 +223,9 @@ def set_control_team(state: Dict[str, Any], team_index: int) -> None:
         raise ValueError("Equipo no válido.")
     if state.get("round_awarded"):
         raise ValueError("La ronda ya fue entregada.")
-    if state.get("round_phase") not in ("faceoff", "active"):
+    if state.get("round_phase") != "faceoff":
+        if state.get("round_phase") == "active":
+            raise ValueError("La familia que ganó el duelo ya fue elegida. Usa Deshacer para corregirla.")
         raise ValueError("Primero inicia el duelo de la ronda.")
     state["control_team"] = team_index
     state["round_phase"] = "active"
@@ -229,6 +233,8 @@ def set_control_team(state: Dict[str, Any], team_index: int) -> None:
 
 
 def reveal_answer(state: Dict[str, Any], bank: List[Dict[str, Any]], index: int) -> int:
+    if state.get("round_phase") not in ("faceoff", "active", "review"):
+        raise ValueError("Primero inicia el duelo de la ronda.")
     question = get_question(bank, state.get("current_question_id"))
     if not question:
         raise ValueError("Selecciona una pregunta primero.")

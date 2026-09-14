@@ -1,3 +1,5 @@
+const CLIENT_VERSION = "8.0.0";
+const REQUIRED_BACKEND_ACTIONS = ["start_round","set_control_team","reveal","strike","award","next_question","undo"];
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 let token = sessionStorage.getItem('100mx_token') || '';
@@ -33,6 +35,33 @@ function message(text, isError=false) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2300);
 }
+
+function assertBackendCompatible(data) {
+  const serverVersion = String(data?.app_version || '');
+  const supported = new Set(data?.supported_actions || []);
+  const missing = REQUIRED_BACKEND_ACTIONS.filter(x => !supported.has(x));
+  if (serverVersion !== CLIENT_VERSION || missing.length) {
+    const detail = !serverVersion
+      ? 'El servidor es anterior a V8.'
+      : `Interfaz V${CLIENT_VERSION} / servidor V${serverVersion}.`;
+    const miss = missing.length ? ` Faltan acciones: ${missing.join(', ')}.` : '';
+    throw new Error(`${detail}${miss} Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py, luego pulsa Reload en PythonAnywhere.`);
+  }
+}
+function friendlyActionError(action, error) {
+  const text = String(error?.message || error || 'Error desconocido');
+  if (/Acción no reconocida/i.test(text) || (action === 'set_control_team' && /no reconocida/i.test(text))) {
+    return new Error('El panel V8 está cargado, pero PythonAnywhere sigue ejecutando un backend anterior. Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py y pulsa Reload.');
+  }
+  return error instanceof Error ? error : new Error(text);
+}
+
+function showCompatibilityError(text) {
+  const el = $('#compatibilityBanner');
+  if (el) { el.textContent = text; el.classList.remove('hidden'); }
+  message(text, true);
+}
+
 function showLogin(msg='') {
   token = '';
   sessionStorage.removeItem('100mx_token');
@@ -58,7 +87,8 @@ async function apiAction(action, payload={}) {
   });
   const j = await r.json();
   if (r.status === 401) { showLogin('La sesión expiró. Ingresa nuevamente el código.'); throw new Error('Sesión expirada.'); }
-  if (!j.ok) throw new Error(j.error || 'No se pudo completar la acción.');
+  if (!j.ok) throw friendlyActionError(action, new Error(j.error || 'No se pudo completar la acción.'));
+  assertBackendCompatible(j.data);
   current = j.data;
   render(current);
   return current;
@@ -69,6 +99,7 @@ async function refresh(initial=false) {
     const j = await r.json();
     if (r.status === 401) { showLogin('La sesión expiró. Ingresa nuevamente el código.'); return; }
     if (!j.ok) throw new Error(j.error || 'No se pudo actualizar.');
+    assertBackendCompatible(j.data);
     current = j.data;
     if (initial) {
       const st = current.state;
@@ -81,7 +112,8 @@ async function refresh(initial=false) {
     render(current);
     $('#connectionStatus').textContent = '● Conectado';
   } catch (e) {
-    if ($('#connectionStatus')) $('#connectionStatus').textContent = '● Reconectando…';
+    if ($('#connectionStatus')) $('#connectionStatus').textContent = '● Error de versión/conexión';
+    if (initial || /servidor|backend|versión|acciones/i.test(String(e.message||''))) showCompatibilityError(e.message || 'No se pudo conectar al servidor.');
   }
 }
 function setStep(step, persist=true, scroll=true) {
@@ -154,6 +186,9 @@ function renderFaceoff(data) {
   }).join(''):'<div class="notice">No hay pregunta seleccionada.</div>';
   $('#faceoffTeam1Btn').classList.toggle('selected-control',st.control_team===0);
   $('#faceoffTeam2Btn').classList.toggle('selected-control',st.control_team===1);
+  const canChoose = st.round_phase === 'faceoff' && !st.round_awarded;
+  $('#faceoffTeam1Btn').disabled = !canChoose;
+  $('#faceoffTeam2Btn').disabled = !canChoose;
 }
 function renderLive(data) {
   const st=data.state, q=questionForState(data), revealed=new Set(st.revealed||[]);
@@ -284,7 +319,20 @@ $('#questionSelect').onchange=e=>apiAction('set_question',{question_id:e.target.
 $$('[data-multiplier]').forEach(btn=>btn.onclick=()=>apiAction('set_multiplier',{multiplier:Number(btn.dataset.multiplier)}).then(()=>message(`Ronda ×${btn.dataset.multiplier}.`)).catch(e=>message(e.message,true)));
 $('#startRoundBtn').onclick=()=>apiAction('start_round').then(()=>{setStep(3);message('Duelo iniciado. Pasa un participante de cada equipo.');}).catch(e=>message(e.message,true));
 $('#faceoffAnswers').onclick=e=>{const b=e.target.closest('[data-faceoff-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.faceoffReveal)}).then(()=>message('Respuesta del duelo revelada.')).catch(x=>message(x.message,true));};
-async function chooseControlTeam(team){ try{await apiAction('set_control_team',{team});setStep(4);message(`Continúa la familia ${current.state.teams[team].name}.`);}catch(e){message(e.message,true);} }
+async function chooseControlTeam(team){
+  const btn = team===0 ? $('#faceoffTeam1Btn') : $('#faceoffTeam2Btn');
+  const other = team===0 ? $('#faceoffTeam2Btn') : $('#faceoffTeam1Btn');
+  try{
+    if(btn) btn.disabled=true; if(other) other.disabled=true;
+    await apiAction('set_control_team',{team});
+    setStep(4);
+    message(`Continúa la familia ${current.state.teams[team].name}.`);
+  }catch(e){
+    message(e.message,true);
+  }finally{
+    if(current?.state?.round_phase==='faceoff'){ if(btn) btn.disabled=false; if(other) other.disabled=false; }
+  }
+}
 $('#faceoffTeam1Btn').onclick=()=>chooseControlTeam(0);
 $('#faceoffTeam2Btn').onclick=()=>chooseControlTeam(1);
 $('#answerControls').onclick=e=>{const b=e.target.closest('[data-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.reveal)}).then(()=>message('Respuesta revelada.')).catch(x=>message(x.message,true));};

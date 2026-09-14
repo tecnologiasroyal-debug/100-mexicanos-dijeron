@@ -13,7 +13,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 # importing this module, for example:
 #   os.environ['CONTROL_PIN'] = '482731'
 
-from app import APP, MAX_UPLOAD_BYTES, STATIC_DIR, UserError
+from app import APP, APP_VERSION, MAX_UPLOAD_BYTES, STATIC_DIR, SUPPORTED_ACTIONS, UserError
 
 
 def _json_bytes(data: Any) -> bytes:
@@ -106,6 +106,9 @@ def application(environ: Dict[str, Any], start_response):
         if method == "GET":
             if path == "/favicon.ico":
                 return _response(start_response, 204, b"", "image/x-icon")
+
+            if path == "/api/version":
+                return _json(start_response, 200, {"ok": True, "data": {"app_version": APP_VERSION, "supported_actions": sorted(SUPPORTED_ACTIONS)}})
 
             if path == "/api/public/state":
                 with APP.lock:

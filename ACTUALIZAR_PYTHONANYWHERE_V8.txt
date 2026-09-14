@@ -1,0 +1,41 @@
+ACTUALIZACIÓN SEGURA A V8 — PYTHONANYWHERE
+=========================================
+
+1) Sube a GitHub los archivos DESCOMPRIMIDOS de V8, reemplazando los anteriores.
+   Deben reemplazarse como mínimo:
+   app.py
+   game_logic.py
+   pythonanywhere_wsgi.py
+   static/control.html
+   static/control.js
+   static/public.html
+   static/public.js
+   static/styles.css
+
+2) NO reemplaces la carpeta data de tu servidor si quieres conservar preguntas/partida.
+
+3) En PythonAnywhere > Consoles > Bash:
+
+cd ~/100-mexicanos-dijeron
+git fetch origin
+git checkout origin/main -- app.py game_logic.py excel_import.py pythonanywhere_wsgi.py static README.md VERSION_V8_AUDITADO.txt
+
+4) Comprueba backend e interfaz:
+
+grep -n 'APP_VERSION = "8.0.0"' app.py
+grep -n 'CLIENT_VERSION = "8.0.0"' static/control.js
+grep -n 'set_control_team' app.py static/control.js
+
+Los tres comandos deben mostrar resultados.
+
+5) En PythonAnywhere > Web pulsa Reload.
+
+6) Abre:
+https://rivaspruebas.pythonanywhere.com/api/version
+
+Debe mostrar app_version 8.0.0 y set_control_team dentro de supported_actions.
+
+7) Abre el conductor en una pestaña nueva:
+https://rivaspruebas.pythonanywhere.com/control?v=8
+
+Si el frontend y el backend no coinciden, V8 mostrará un mensaje explícito en lugar de “Acción no reconocida”.

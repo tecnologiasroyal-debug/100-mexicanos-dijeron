@@ -1,70 +1,95 @@
-# 100 Mexicanos Dijeron — V7 DUELO INICIAL
+# 100 Mexicanos Dijeron — V8 AUDITADO
 
-Versión preparada para `rivaspruebas.pythonanywhere.com` o cualquier cuenta equivalente de PythonAnywhere.
+Versión completa para PythonAnywhere y uso local. Esta versión corrige el problema **“Acción no reconocida”** al elegir qué familia ganó el duelo y añade comprobaciones para detectar si el navegador y PythonAnywhere están ejecutando versiones diferentes.
 
-## Cambios de esta versión
+## Flujo del conductor
 
-- En tablero público cambia **Errores** por **STRIKES**.
-- Control del conductor rediseñado para celular: botones grandes, colores y accesos rápidos fijos.
-- Botón **INICIAR RONDA** con evento de sonido independiente.
-- Al entregar puntos la ronda entra en **REVISIÓN**: puedes descubrir las respuestas faltantes y **ya no suman puntos**.
-- Botón **SIGUIENTE PREGUNTA** solo después de entregar la ronda.
-- Historial persistente de preguntas usadas en `data/question_usage.json`.
-- Las preguntas usadas quedan excluidas de la selección automática incluso otro día.
-- Avisos cuando el banco llega a 50, 25, 10 o 0 preguntas disponibles.
-- Botón privado para reiniciar el historial de preguntas usadas.
-- Incluye los cuatro MP3 personalizados proporcionados, con respaldo automático a los WAV incluidos.
+**Equipos → Preparar → Duelo → Familia → Cerrar**
 
-## Sonidos MP3 personalizados
+1. **Equipos:** nombres y marcador.
+2. **Preparar:** pregunta y multiplicador ×1 / ×2 / ×3.
+3. **Duelo:** pasan dos participantes a los zumbadores físicos, se pueden revelar sus respuestas y el conductor elige qué familia continúa.
+4. **Familia:** respuestas, STRIKES, temporizador y bolsa de puntos.
+5. **Cerrar:** ronda normal o robo, entrega única de puntos, revelado de respuestas faltantes sin volver a sumar y siguiente ronda.
 
-Esta versión YA incluye en `static/sounds/`:
+## Correcciones V8
+
+- `set_control_team` está implementado y probado en backend y frontend.
+- Compatibilidad con alias `faceoff_winner`, `duel_winner`, `choose_control_team` y `set_family_control`.
+- La interfaz y el servidor publican versión **8.0.0**.
+- Endpoint de diagnóstico: `/api/version`.
+- Si el navegador carga V8 pero PythonAnywhere sigue con un backend anterior, el conductor muestra un aviso explícito en lugar de un error genérico.
+- Bloqueo de doble toque al escoger al ganador del duelo.
+- Una vez elegida la familia en control, no se puede cambiar por accidente; se usa **Deshacer** para corregir.
+- No se puede revelar una respuesta antes de iniciar el duelo.
+- No se puede cambiar pregunta a mitad de ronda.
+- No se puede avanzar a la siguiente pregunta sin cerrar y entregar la ronda.
+- El multiplicador queda bloqueado cuando inicia el duelo.
+- Se conserva el flujo posterior a un robo: entregar puntos → revelar faltantes → siguiente pregunta.
+
+## Sonidos incluidos
+
+En `static/sounds/` están los cuatro MP3 proporcionados:
 
 - `iniciar_ronda.mp3`
 - `respuesta_correcta.mp3`
 - `strike.mp3`
 - `ganar_ronda.mp3`
 
-Los WAV de respaldo se conservan para los demás eventos y como compatibilidad.
+También se conservan los WAV de respaldo para tiempo agotado y otros eventos.
 
-## Actualizar una instalación existente en PythonAnywhere
+## Actualización segura de PythonAnywhere
 
-1. Sube estos archivos al repositorio de GitHub `100-mexicanos-dijeron` y haz Commit.
-2. En PythonAnywhere abre una consola **Bash**.
-3. Ejecuta:
+**No reemplaces la carpeta `data` de tu servidor si quieres conservar preguntas, marcadores e historial de usadas.**
+
+1. Descomprime este ZIP.
+2. Sube los archivos a GitHub y reemplaza los anteriores. Como mínimo deben actualizarse:
+   - `app.py`
+   - `game_logic.py`
+   - `pythonanywhere_wsgi.py`
+   - carpeta `static`
+3. En PythonAnywhere abre **Consoles → Bash** y ejecuta:
 
 ```bash
 cd ~/100-mexicanos-dijeron
-git pull
+git fetch origin
+git checkout origin/main -- app.py game_logic.py excel_import.py pythonanywhere_wsgi.py static README.md VERSION_V8_AUDITADO.txt
 ```
 
-4. Ve a **Web** y pulsa **Reload rivaspruebas.pythonanywhere.com**.
-5. Abre:
-   - Tablero: `https://rivaspruebas.pythonanywhere.com/public`
-   - Control: `https://rivaspruebas.pythonanywhere.com/control`
+4. Comprueba que realmente llegó V8:
 
-## Banco de 500 preguntas
+```bash
+grep -n 'APP_VERSION = "8.0.0"' app.py
+grep -n 'CLIENT_VERSION = "8.0.0"' static/control.js
+grep -n 'set_control_team' app.py static/control.js
+```
 
-Esta versión incluye el motor de historial/uso, pero **no añade todavía las 500 preguntas**, porque se acordó revisar/aprobar primero el estilo de las preguntas antes de incorporarlas al banco definitivo.
+5. En **Web** pulsa **Reload rivaspruebas.pythonanywhere.com**.
+6. Abre en el navegador:
 
-## Persistencia
+`https://rivaspruebas.pythonanywhere.com/api/version`
 
-PythonAnywhere guarda `data/question_usage.json`, `data/game_state.json` y `data/question_bank.json` en el almacenamiento de tu cuenta. Por eso el historial de usadas se conserva entre sesiones y días, salvo que tú lo reinicies o reemplaces esos archivos.
+Debe aparecer `app_version: 8.0.0` y `set_control_team` dentro de `supported_actions`.
 
-## Panel del conductor V7
-El panel del conductor ahora usa un flujo guiado de cinco pasos: **Equipos → Preparar → Duelo → Familia → Cerrar**. Antes de que la familia empiece a responder, pasan dos participantes a los zumbadores físicos. El conductor revela las respuestas que den en el cara a cara y selecciona manualmente qué equipo ganó el duelo y continúa con la ronda. Las funciones secundarias permanecen dentro del menú lateral para evitar una página larga con scroll. El logo de 100 Mexicanos Dijeron y el crédito "Desarrollado por Carlos Rivas" siguen visibles en el panel.
+7. Abre el conductor en una pestaña nueva:
 
-### Zumbadores
-Esta versión **no intenta leer electrónicamente los zumbadores físicos**. Tú observas quién presionó primero y, desde el celular, eliges qué equipo ganó el duelo. Si más adelante quieres que los botones USB/Bluetooth se detecten automáticamente, eso requiere una integración específica según el modelo de los zumbadores.
+`https://rivaspruebas.pythonanywhere.com/control?v=8`
 
+## Datos persistentes
 
-## V6 — Teclado móvil
-Se corrigió el formulario de equipos para que el refresco en vivo no borre ni mueva los campos mientras el conductor escribe desde un celular.
+Los archivos importantes están en `data/`:
 
+- `question_bank.json`: banco de preguntas.
+- `question_usage.json`: preguntas ya usadas.
+- `game_state.json`: estado y marcadores.
+- `config.json`: configuración local.
 
-## V7 — Duelo inicial
-- Paso 3 dedicado al cara a cara de los dos participantes.
-- Permite revelar las respuestas que den durante el duelo.
-- Botones grandes para elegir **qué equipo ganó el duelo**.
-- El equipo elegido queda marcado como **EN CONTROL** durante la ronda familiar.
-- Los STRIKES solo se habilitan después de elegir quién continúa.
-- El cierre de ronda conserva robo, entrega única de puntos y revelado de faltantes.
+Para conservar una instalación existente, no sustituyas esos archivos al actualizar código.
+
+## Zumbadores
+
+La V8 usa zumbadores físicos como apoyo presencial, pero no los lee electrónicamente. El conductor observa quién pulsó primero y selecciona desde el celular qué familia ganó el duelo.
+
+## Pruebas V8
+
+Se verificaron compilación Python, sintaxis JavaScript, contrato frontend/backend, flujo del duelo, selección de familia, STRIKES, multiplicadores, entrega única, robo, revelado posterior sin re-sumar, siguiente pregunta, undo, importación Excel, sincronización y endpoint de versión.

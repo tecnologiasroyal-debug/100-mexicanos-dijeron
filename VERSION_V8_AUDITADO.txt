@@ -1,0 +1,12 @@
+100 MEXICANOS DIJERON — V8 AUDITADO
+
+Correcciones principales:
+- Contrato de versión entre interfaz y backend para evitar mezclar archivos viejos/nuevos.
+- /api/version para diagnóstico.
+- El ganador del duelo usa set_control_team y el backend acepta alias compatibles.
+- Mensaje claro si PythonAnywhere sigue ejecutando un backend anterior.
+- Bloqueo de doble toque al elegir familia ganadora del duelo.
+- Multiplicador bloqueado una vez iniciado el duelo.
+- No se puede cambiar de familia en mitad de la ronda por accidente; usar Deshacer.
+- No se pueden revelar respuestas antes de iniciar el duelo.
+- Revisión de contrato de acciones, JavaScript y pruebas automatizadas.

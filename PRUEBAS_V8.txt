@@ -1,0 +1,25 @@
+100 MEXICANOS DIJERON — REPORTE DE PRUEBAS V8
+===============================================
+
+Resultado automatizado:
+- 96 pruebas pasaron
+- 1 prueba omitida (condicional del entorno)
+- 0 fallos
+
+Validaciones adicionales:
+- app.py, game_logic.py, excel_import.py y pythonanywhere_wsgi.py compilan correctamente.
+- static/control.js y static/public.js pasan validación de sintaxis con Node.
+- Contrato de acciones frontend/backend verificado: no hay acciones del panel sin implementación en app.py.
+- /api/version devuelve app_version 8.0.0 y anuncia set_control_team.
+- WSGI de PythonAnywhere probado directamente con /api/version.
+- Servidor HTTP real probado de extremo a extremo:
+  login -> preparar -> iniciar duelo -> revelar -> elegir familia -> strike -> entregar por robo -> revelar faltante sin re-sumar.
+- Alias de selección de ganador del duelo comprobados.
+- Doble selección de familia después de iniciar la fase familiar queda bloqueada y se corrige con Deshacer.
+- Cambio de pregunta durante ronda bloqueado.
+- Avance a siguiente pregunta antes de cerrar ronda bloqueado.
+- Multiplicador bloqueado una vez iniciado el duelo.
+- MP3 personalizados presentes en static/sounds.
+
+Problema observado en V7:
+El mensaje "Acción no reconocida" no provenía del botón en sí: ocurre cuando el navegador tiene la interfaz nueva (que envía set_control_team) pero PythonAnywhere sigue ejecutando un app.py anterior que todavía no conoce esa acción. V8 añade detección explícita de esta mezcla de versiones.
