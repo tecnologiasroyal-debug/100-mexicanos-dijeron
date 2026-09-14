@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: 100-mexicanos-dijeron
+    runtime: python
+    plan: free
+    buildCommand: "echo Sin dependencias externas"
+    startCommand: "python app.py"
+    envVars:
+      - key: CONTROL_PIN
+        sync: false

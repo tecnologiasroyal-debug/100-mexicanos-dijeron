@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>100 Mexicanos Dijeron</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="public-body">
+  <div id="activation" class="activation">
+    <div class="activation-card">
+      <h2>100 Mexicanos Dijeron</h2>
+      <p>Haz clic una sola vez para habilitar sonidos y, si el navegador lo permite, entrar en pantalla completa.</p>
+      <button id="activateBtn" class="primary-btn">Activar sonido y pantalla completa</button>
+    </div>
+  </div>
+
+  <main class="board-shell">
+    <section class="board-top">
+      <div class="team-score"><div id="team1Name" class="name">Equipo 1</div><div id="team1Score" class="score">0</div></div>
+      <div class="brand"><h1>100 Mexicanos<br>Dijeron</h1><div class="sub">Juego familiar</div></div>
+      <div class="team-score"><div id="team2Name" class="name">Equipo 2</div><div id="team2Score" class="score">0</div></div>
+    </section>
+
+    <section class="question-band">
+      <div id="questionText" class="question">Preparando tablero…</div>
+      <div class="meta-strip"><span id="multiplier" class="multiplier-pill">×1</span><span>TIEMPO <span id="timer" class="timer-display">30</span></span></div>
+    </section>
+
+    <section id="normalBoard" class="answers-wrap normal-board">
+      <div id="answersGrid" class="answers-grid"></div>
+    </section>
+
+    <section id="fastBoard" class="fast-board">
+      <div class="fast-column"><h2>Participante 1</h2><div id="fastP1"></div><div id="fastP1Total" class="fast-total">0</div></div>
+      <div class="fast-column"><h2>Participante 2</h2><div id="fastP2"></div><div id="fastP2Total" class="fast-total">0</div></div>
+      <div class="fast-goal">TOTAL: <strong id="fastCombined">0</strong> &nbsp; / &nbsp; META: <strong id="fastTarget">200</strong></div>
+    </section>
+
+    <section class="board-bottom">
+      <div id="strikes" class="strikes"></div>
+      <div class="round-total"><div class="label">Puntos de la ronda</div><div id="roundTotal" class="value">0</div></div>
+      <div id="eventBanner" class="event-banner"></div>
+    </section>
+  </main>
+
+  <div id="strikeOverlay" class="strike-overlay"><div id="overlayXs" class="xs"></div></div>
+  <div class="footer-credit">Desarrollado por Carlos Rivas</div>
+
+  <audio id="soundCorrect" preload="auto" src="/static/sounds/acierto.wav"></audio>
+  <audio id="soundError" preload="auto" src="/static/sounds/error.wav"></audio>
+  <audio id="soundVictory" preload="auto" src="/static/sounds/victoria.wav"></audio>
+  <audio id="soundTimeout" preload="auto" src="/static/sounds/tiempo.wav"></audio>
+  <script src="/static/public.js"></script>
+</body>
+</html>

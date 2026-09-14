@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "teams": [
+    {
+      "name": "Equipo 1",
+      "score": 0
+    },
+    {
+      "name": "Equipo 2",
+      "score": 0
+    }
+  ],
+  "screen_mode": "normal",
+  "current_question_id": "EJ-001",
+  "multiplier": 1,
+  "revealed": [],
+  "round_points": 0,
+  "errors": 0,
+  "round_awarded": false,
+  "last_award": null,
+  "timer": {
+    "duration": 30,
+    "remaining": 30,
+    "running": false,
+    "end_epoch": null
+  },
+  "fast_money": {
+    "target": 200,
+    "questions": [
+      {
+        "question": "Pregunta 1",
+        "p1": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        },
+        "p2": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        }
+      },
+      {
+        "question": "Pregunta 2",
+        "p1": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        },
+        "p2": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        }
+      },
+      {
+        "question": "Pregunta 3",
+        "p1": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        },
+        "p2": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        }
+      },
+      {
+        "question": "Pregunta 4",
+        "p1": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        },
+        "p2": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        }
+      },
+      {
+        "question": "Pregunta 5",
+        "p1": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        },
+        "p2": {
+          "answer": "",
+          "points": 0,
+          "revealed": false
+        }
+      }
+    ]
+  },
+  "events": [],
+  "next_event_id": 1
+}

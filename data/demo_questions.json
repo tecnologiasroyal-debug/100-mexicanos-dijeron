@@ -1,0 +1,71 @@
+[
+  {
+    "id": "EJ-001",
+    "question": "[EJEMPLO] Menciona algo que la gente hace antes de salir de casa",
+    "example": true,
+    "answers": [
+      {"text": "Revisar el celular", "points": 31},
+      {"text": "Cerrar puertas y ventanas", "points": 24},
+      {"text": "Verse al espejo", "points": 18},
+      {"text": "Tomar las llaves", "points": 14},
+      {"text": "Apagar las luces", "points": 8},
+      {"text": "Despedirse", "points": 5}
+    ]
+  },
+  {
+    "id": "EJ-002",
+    "question": "[EJEMPLO] Menciona algo que encuentras en una fiesta mexicana",
+    "example": true,
+    "answers": [
+      {"text": "Música", "points": 29},
+      {"text": "Comida", "points": 25},
+      {"text": "Piñata", "points": 17},
+      {"text": "Pastel", "points": 12},
+      {"text": "Refrescos", "points": 9},
+      {"text": "Globos", "points": 5},
+      {"text": "Dulces", "points": 3}
+    ]
+  },
+  {
+    "id": "EJ-003",
+    "question": "[EJEMPLO] Algo que llevas a la playa",
+    "example": true,
+    "answers": [
+      {"text": "Toalla", "points": 30},
+      {"text": "Bloqueador solar", "points": 23},
+      {"text": "Traje de baño", "points": 18},
+      {"text": "Lentes de sol", "points": 11},
+      {"text": "Sombrilla", "points": 8},
+      {"text": "Agua", "points": 6},
+      {"text": "Sandalias", "points": 4}
+    ]
+  },
+  {
+    "id": "EJ-004",
+    "question": "[EJEMPLO] Algo que puede despertar a una persona muy temprano",
+    "example": true,
+    "answers": [
+      {"text": "La alarma", "points": 36},
+      {"text": "Un bebé", "points": 19},
+      {"text": "Un perro", "points": 14},
+      {"text": "Ruido de la calle", "points": 11},
+      {"text": "El trabajo", "points": 9},
+      {"text": "El sol", "points": 7},
+      {"text": "Hambre", "points": 4}
+    ]
+  },
+  {
+    "id": "EJ-005",
+    "question": "[EJEMPLO] Menciona algo que nunca quieres olvidar al viajar",
+    "example": true,
+    "answers": [
+      {"text": "Dinero / tarjeta", "points": 28},
+      {"text": "Identificación", "points": 24},
+      {"text": "Celular", "points": 19},
+      {"text": "Cargador", "points": 12},
+      {"text": "Ropa", "points": 8},
+      {"text": "Boletos", "points": 6},
+      {"text": "Medicinas", "points": 3}
+    ]
+  }
+]

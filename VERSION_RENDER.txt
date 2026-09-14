@@ -1,0 +1,3 @@
+100 Mexicanos Dijeron — Render v1.0
+Preparado para ejecución con python app.py y variable PORT de Render.
+CONTROL_PIN se configura como variable de entorno de 6 dígitos.

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Control — 100 Mexicanos Dijeron</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-body">
+  <section id="loginView" class="login-wrap">
+    <div class="login-card">
+      <h1>Control del conductor</h1>
+      <p>Ingresa el código de 6 dígitos mostrado en la computadora anfitriona.</p>
+      <label for="pinInput">Código</label>
+      <input id="pinInput" type="number" inputmode="numeric" placeholder="000000" />
+      <button id="loginBtn" class="btn btn-blue" style="width:100%; margin-top:12px">Entrar</button>
+      <div id="loginMsg" class="notice error hidden" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <div id="appView" class="hidden">
+    <header class="topbar"><div class="topbar-inner"><div><h1>100 Mexicanos Dijeron — Control</h1><div id="connectionStatus" class="status">Conectado</div></div><a class="btn btn-gold" href="/public" target="_blank" rel="noopener">Abrir tablero</a></div></header>
+    <main class="container">
+      <section class="card">
+        <div class="row" style="justify-content:space-between"><h2 style="margin:0">Pantalla</h2><span id="modePill" class="pill">Ronda normal</span></div>
+        <div class="row" style="margin-top:10px"><button id="normalModeBtn" class="btn btn-blue big-btn">Ronda normal</button><button id="fastModeBtn" class="btn btn-dark big-btn">Dinero rápido</button></div>
+      </section>
+
+      <section class="card">
+        <h2>Equipos y marcador</h2>
+        <div class="grid-2">
+          <div class="team-edit">
+            <label>Equipo 1</label><input id="team1NameInput" type="text" />
+            <div class="scoreline" style="margin-top:8px"><div><label>Marcador</label><input id="team1ScoreInput" type="number" min="0" /></div><button class="btn" data-score-team="0">Corregir</button><button class="btn btn-blue" data-name-team="0">Guardar nombre</button></div>
+          </div>
+          <div class="team-edit">
+            <label>Equipo 2</label><input id="team2NameInput" type="text" />
+            <div class="scoreline" style="margin-top:8px"><div><label>Marcador</label><input id="team2ScoreInput" type="number" min="0" /></div><button class="btn" data-score-team="1">Corregir</button><button class="btn btn-blue" data-name-team="1">Guardar nombre</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="normalControls">
+        <section class="card">
+          <h2>Ronda</h2>
+          <div class="grid-2">
+            <div><label>Pregunta</label><select id="questionSelect"></select></div>
+            <div><label>Multiplicador</label><select id="multiplierSelect"><option value="1">Normal ×1</option><option value="2">Doble ×2</option><option value="3">Triple ×3</option></select></div>
+          </div>
+          <div class="row" style="margin-top:10px"><span class="pill">Puntos de ronda: <strong id="roundPointsControl" style="margin-left:5px">0</strong></span><span id="awardedPill" class="pill hidden">Ronda ya entregada</span><button id="resetRoundBtn" class="btn">Reiniciar esta ronda</button></div>
+          <h3>Respuestas</h3>
+          <div id="answerControls"></div>
+        </section>
+
+        <section class="card">
+          <h2>Errores</h2>
+          <div class="row"><button id="strikeBtn" class="btn btn-red big-btn">X — Marcar error</button><button id="clearStrikesBtn" class="btn big-btn">Limpiar X</button><span id="strikeCount" class="pill">0 / 3</span></div>
+        </section>
+
+        <section class="card">
+          <h2>Entregar puntos / robo</h2>
+          <div class="grid-2"><div><label>Tipo de entrega</label><select id="awardReason"><option value="ronda">Ganó la ronda</option><option value="robo">Robo</option></select></div><div class="notice">Los puntos solo pueden entregarse una vez por ronda. Si te equivocas, usa <strong>Deshacer</strong>.</div></div>
+          <div class="row" style="margin-top:10px"><button id="awardTeam1" class="btn btn-gold big-btn">Entregar a Equipo 1</button><button id="awardTeam2" class="btn btn-gold big-btn">Entregar a Equipo 2</button></div>
+        </section>
+      </section>
+
+      <section class="card">
+        <h2>Temporizador</h2>
+        <div class="row"><div style="width:120px"><label>Segundos</label><input id="timerSeconds" type="number" min="1" max="3600" /></div><button id="timerSet" class="btn">Configurar</button><button id="timerStart" class="btn btn-blue">Iniciar</button><button id="timerPause" class="btn">Pausar</button><button id="timerReset" class="btn">Reiniciar</button><span id="timerPill" class="pill">30 s</span></div>
+      </section>
+
+      <section id="fastControls" class="card hidden">
+        <h2>Dinero rápido</h2>
+        <div class="row"><div style="width:150px"><label>Meta</label><input id="fastTargetInput" type="number" min="1" value="200" /></div><span id="fastTotalPill" class="pill">Total capturado: 0</span><button id="saveFastBtn" class="btn btn-blue">Guardar captura</button><button id="hideFastBtn" class="btn">Ocultar todo</button></div>
+        <div id="fastWarnings"></div>
+        <div id="fastEditor"></div>
+      </section>
+
+      <section class="card">
+        <h2>Preguntas desde Excel</h2>
+        <p class="small">Importar reemplaza el banco actual. El archivo debe tener las columnas ID, Pregunta, Respuesta y Puntos; una respuesta por fila.</p>
+        <div class="row"><input id="xlsxInput" type="file" accept=".xlsx" style="max-width:520px" /><button id="importBtn" class="btn btn-blue">Importar .xlsx</button><button id="restoreDemoBtn" class="btn">Restaurar ejemplos</button></div>
+        <div id="importMsg" class="notice hidden" style="margin-top:10px"></div>
+      </section>
+
+      <section class="card">
+        <h2>Partida</h2>
+        <div class="row"><button id="newGameBtn" class="btn btn-red">Nueva partida (marcadores en 0)</button><span class="small">El banco de preguntas se conserva.</span></div>
+      </section>
+    </main>
+
+    <div class="sticky-actions"><div class="sticky-inner"><span id="actionMsg" class="small">Listo.</span><button id="undoBtn" class="btn btn-dark">↶ Deshacer última acción</button></div></div>
+  </div>
+  <script src="/static/control.js"></script>
+</body>
+</html>

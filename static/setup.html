@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>100 Mexicanos Dijeron — Configuración</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-body">
+  <header class="topbar"><div class="topbar-inner"><h1>100 Mexicanos Dijeron — Inicio</h1><span class="status">Servidor web</span></div></header>
+  <main class="container">
+    <section class="card setup-grid">
+      <div>
+        <h2>Listo para jugar</h2>
+        <p>Abre el tablero en la TV/proyector y usa el QR para conectar el celular del conductor. Guarda en privado el código de control.</p>
+        <h3>1. Tablero público</h3>
+        <div id="publicUrl" class="linkbox">Cargando…</div>
+        <div class="row" style="margin-top:10px"><button id="openPublic" class="btn btn-blue">Abrir tablero público</button><button id="copyPublic" class="btn">Copiar enlace</button></div>
+        <h3>2. Control del conductor</h3>
+        <div id="controlUrl" class="linkbox">Cargando…</div>
+        <p class="small">El enlace privado ya incluye el código. Si lo abres sin ese enlace, usa este código:</p>
+        <div id="pin" class="code-box">------</div>
+        <div class="row" style="margin-top:10px"><button id="openControl" class="btn btn-gold">Abrir control en esta computadora</button><button id="copyControl" class="btn">Copiar enlace privado</button></div>
+      </div>
+      <div class="qr-card">
+        <h2>Escanea con el celular</h2>
+        <img id="qr" alt="QR del control" />
+        <p class="small">El celular y la computadora pueden estar en cualquier red con Internet.</p>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Antes de proyectar</h2>
+      <div class="notice">En el tablero público pulsa “Activar sonido y pantalla completa” una vez. Los navegadores requieren ese clic para permitir los efectos de sonido.</div>
+    </section>
+  </main>
+  <script src="/static/setup.js"></script>
+</body>
+</html>
