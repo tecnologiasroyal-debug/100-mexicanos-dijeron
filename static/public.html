@@ -9,38 +9,74 @@
 <body class="public-body">
   <div id="activation" class="activation">
     <div class="activation-card">
-      <h2>100 Mexicanos Dijeron</h2>
-      <p>Haz clic una sola vez para habilitar sonidos y, si el navegador lo permite, entrar en pantalla completa.</p>
-      <button id="activateBtn" class="primary-btn">Activar sonido y pantalla completa</button>
+      <div class="activation-logo">100 Mexicanos Dijeron</div>
+      <p>Haz clic una sola vez para habilitar sonidos y entrar en pantalla completa.</p>
+      <button id="activateBtn" class="primary-btn">INICIAR JUEGO</button>
     </div>
   </div>
 
+  <div class="stage-glow stage-glow-left"></div>
+  <div class="stage-glow stage-glow-right"></div>
+
   <main class="board-shell">
-    <section class="board-top">
-      <div class="team-score"><div id="team1Name" class="name">Equipo 1</div><div id="team1Score" class="score">0</div></div>
-      <div class="brand"><h1>100 Mexicanos<br>Dijeron</h1><div class="sub">Juego familiar</div></div>
-      <div class="team-score"><div id="team2Name" class="name">Equipo 2</div><div id="team2Score" class="score">0</div></div>
+    <section class="show-header">
+      <div class="team-score team-left">
+        <div id="team1Name" class="name">Equipo 1</div>
+        <div id="team1Score" class="score">0</div>
+      </div>
+
+      <div class="marquee" aria-label="100 Mexicanos Dijeron">
+        <div class="marquee-inner">
+          <div class="logo-100">100</div>
+          <div class="logo-copy">
+            <div class="logo-mexicanos">Mexicanos</div>
+            <div class="logo-dijeron">Dijeron</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-score team-right">
+        <div id="team2Name" class="name">Equipo 2</div>
+        <div id="team2Score" class="score">0</div>
+      </div>
     </section>
 
     <section class="question-band">
       <div id="questionText" class="question">Preparando tablero…</div>
-      <div class="meta-strip"><span id="multiplier" class="multiplier-pill">×1</span><span>TIEMPO <span id="timer" class="timer-display">30</span></span></div>
+      <div class="meta-strip">
+        <span id="multiplier" class="multiplier-pill">×1</span>
+        <span class="timer-label">TIEMPO <span id="timer" class="timer-display">30</span></span>
+      </div>
     </section>
 
-    <section id="normalBoard" class="answers-wrap normal-board">
-      <div id="answersGrid" class="answers-grid"></div>
-    </section>
+    <section class="main-board-frame">
+      <div class="board-lights"></div>
+      <section id="normalBoard" class="answers-wrap normal-board">
+        <div id="answersGrid" class="answers-grid"></div>
+      </section>
 
-    <section id="fastBoard" class="fast-board">
-      <div class="fast-column"><h2>Participante 1</h2><div id="fastP1"></div><div id="fastP1Total" class="fast-total">0</div></div>
-      <div class="fast-column"><h2>Participante 2</h2><div id="fastP2"></div><div id="fastP2Total" class="fast-total">0</div></div>
-      <div class="fast-goal">TOTAL: <strong id="fastCombined">0</strong> &nbsp; / &nbsp; META: <strong id="fastTarget">200</strong></div>
+      <section id="fastBoard" class="fast-board">
+        <div class="fast-column"><h2>Participante 1</h2><div id="fastP1"></div><div id="fastP1Total" class="fast-total">0</div></div>
+        <div class="fast-column"><h2>Participante 2</h2><div id="fastP2"></div><div id="fastP2Total" class="fast-total">0</div></div>
+        <div class="fast-goal">TOTAL: <strong id="fastCombined">0</strong> &nbsp; / &nbsp; META: <strong id="fastTarget">200</strong></div>
+      </section>
     </section>
 
     <section class="board-bottom">
-      <div id="strikes" class="strikes"></div>
-      <div class="round-total"><div class="label">Puntos de la ronda</div><div id="roundTotal" class="value">0</div></div>
-      <div id="eventBanner" class="event-banner"></div>
+      <div class="bottom-panel left-panel">
+        <div class="bottom-label">ERRORES</div>
+        <div id="strikes" class="strikes"></div>
+      </div>
+
+      <div class="round-total">
+        <div class="label">PUNTOS DE LA RONDA</div>
+        <div id="roundTotal" class="value">0</div>
+      </div>
+
+      <div class="bottom-panel right-panel">
+        <div class="bottom-label">PARTIDA</div>
+        <div id="eventBanner" class="event-banner"></div>
+      </div>
     </section>
   </main>
 
