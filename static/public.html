@@ -4,13 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css?v=11.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=12.0" />
 </head>
 <body class="public-body">
+  <section id="introOverlay" class="intro-overlay show" aria-live="polite">
+    <div class="intro-rays" aria-hidden="true"></div>
+    <div class="intro-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="intro-card">
+      <div class="intro-logo" aria-label="100 Mexicanos Dijeron">
+        <div class="intro-logo-100">100</div>
+        <div class="intro-logo-copy"><strong>MEXICANOS</strong><span>DIJERON</span></div>
+      </div>
+      <div class="intro-kicker">PANTALLA LISTA</div>
+      <h1>Esperando anfitrión</h1>
+      <p>El juego iniciará cuando el conductor lo indique desde su celular.</p>
+      <div class="intro-pulse-bar"><span></span></div>
+    </div>
+    <div class="intro-credit">Desarrollado por Carlos Rivas</div>
+  </section>
   <div class="stage-glow stage-glow-left"></div>
   <div class="stage-glow stage-glow-right"></div>
 
-  <main class="board-shell">
+  <main id="boardShell" class="board-shell hidden">
     <section class="show-header">
       <div class="team-score team-left">
         <div id="team1Name" class="name">Equipo 1</div>
@@ -97,6 +112,6 @@
   <audio id="soundError" preload="auto"><source src="/static/sounds/strike.mp3" type="audio/mpeg"><source src="/static/sounds/error.wav" type="audio/wav"></audio>
   <audio id="soundVictory" preload="auto"><source src="/static/sounds/ganar_ronda.mp3" type="audio/mpeg"><source src="/static/sounds/victoria.wav" type="audio/wav"></audio>
   <audio id="soundTimeout" preload="auto" src="/static/sounds/tiempo.wav"></audio>
-  <script src="/static/public.js?v=11.0"></script>
+  <script src="/static/public.js?v=12.0"></script>
 </body>
 </html>

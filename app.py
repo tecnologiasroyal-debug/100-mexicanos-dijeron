@@ -30,6 +30,7 @@ from game_logic import (
     fast_money_reveal,
     fast_money_totals,
     finish_game,
+    start_public_game,
     pause_timer,
     public_state,
     recompute_round_points,
@@ -61,7 +62,7 @@ HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", os.environ.get("CIEN_MEXICANOS_PORT", "8765")))
 HOSTED = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-APP_VERSION = "11.0.0"
+APP_VERSION = "12.0.0"
 FIXED_CONTROL_PIN = "19030792"
 
 SUPPORTED_ACTIONS = {
@@ -70,6 +71,7 @@ SUPPORTED_ACTIONS = {
     "team_name", "score", "timer_config", "timer_start", "timer_pause",
     "timer_reset", "screen_mode", "fast_update", "fast_reveal",
     "fast_hide_all", "round_reset", "reset_usage", "new_game", "restore_demo", "finish_game",
+    "start_game_display",
 }
 ACTION_ALIASES = {
     "faceoff_winner": "set_control_team",
@@ -371,6 +373,8 @@ class GameApp:
                 elif action == "reset_usage":
                     self.usage = {}
                     add_event(self.state, "usage_reset")
+                elif action == "start_game_display":
+                    start_public_game(self.state)
                 elif action == "finish_game":
                     finish_game(self.state)
                 elif action == "new_game":

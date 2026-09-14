@@ -862,3 +862,25 @@ input:focus, select:focus { border-color: #2472ce; box-shadow: 0 0 0 3px rgba(36
 }
 .faceoff-question-button.question-is-visible small { color:#7be4ab; }
 .question-band .question.question-hidden-tv { min-height:1.1em; color:transparent; text-shadow:none; }
+
+
+/* =========================================================
+   V12 — pantalla de inicio TV y control total desde móvil
+   ========================================================= */
+.board-shell.hidden{display:none !important}
+.intro-overlay{position:fixed;inset:0;z-index:140;display:none;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 42%,rgba(23,111,230,.96) 0,#093375 44%,#020d22 100%);color:#fff}
+.intro-overlay.show{display:grid;animation:winnerFade .45s ease-out}
+.intro-rays{position:absolute;inset:0;background:repeating-conic-gradient(from 0deg,rgba(255,215,76,.16) 0deg 8deg,transparent 8deg 16deg);animation:winnerSpin 30s linear infinite;transform:scale(1.45)}
+.intro-card{position:relative;z-index:2;width:min(900px,88vw);min-height:min(500px,70vh);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5vh 6vw;border-radius:44px;border:5px solid #f7c53d;background:linear-gradient(180deg,rgba(13,75,160,.94),rgba(4,30,83,.96));box-shadow:0 0 0 7px #7f3e08,0 25px 70px rgba(0,0,0,.55),inset 0 0 45px rgba(83,172,255,.35)}
+.intro-logo{display:flex;align-items:center;gap:14px;filter:drop-shadow(0 5px 5px rgba(0,0,0,.25));margin-bottom:2.5vh}.intro-logo-100{font:1000 clamp(68px,9vw,128px)/.8 Arial Black,Impact,sans-serif;color:#fff2a7;-webkit-text-stroke:3px #b75b08;text-shadow:0 5px 0 #673000}.intro-logo-copy{display:grid;text-align:left;font-family:Arial Black,Impact,sans-serif;text-transform:uppercase;line-height:.88}.intro-logo-copy strong{font-size:clamp(28px,3vw,52px);color:#fff}.intro-logo-copy span{font-size:clamp(32px,3.6vw,64px);color:#ffd64a;text-shadow:0 3px 0 #6d3700}
+.intro-kicker{display:inline-block;margin-bottom:10px;padding:7px 16px;border-radius:999px;background:rgba(92,170,255,.12);color:#91caff;font-size:clamp(10px,1vw,14px);font-weight:1000;letter-spacing:.18em;text-transform:uppercase}
+.intro-card h1{margin:8px 0 10px;font-size:clamp(36px,5vw,76px);line-height:.95;color:#fff;-webkit-text-stroke:1px #0a2e69;text-shadow:0 6px 0 #08377e,0 12px 24px rgba(0,0,0,.35);text-transform:uppercase}
+.intro-card p{max-width:min(680px,82%);margin:0 auto 26px;font-size:clamp(16px,1.5vw,26px);color:#d7e8ff}
+.intro-pulse-bar{width:min(440px,66vw);height:16px;padding:3px;border-radius:999px;background:rgba(2,18,49,.8);border:2px solid #ffcf48;box-shadow:inset 0 0 16px rgba(35,128,255,.28)}
+.intro-pulse-bar span{display:block;height:100%;width:34%;border-radius:999px;background:linear-gradient(90deg,#ffd84a,#fff4b4,#ffd84a);animation:introPulseBar 1.8s ease-in-out infinite}
+.intro-credit{position:absolute;z-index:3;bottom:18px;left:0;right:0;text-align:center;color:rgba(255,255,255,.38);font-size:clamp(10px,.9vw,14px);letter-spacing:.08em}
+.intro-particles{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}.intro-particles i{position:absolute;top:-10%;width:14px;height:14px;border-radius:50%;background:rgba(255,215,76,.95);box-shadow:0 0 20px rgba(255,215,76,.6);animation:introFloat 5.6s linear infinite}.intro-particles i:nth-child(2n){background:rgba(93,229,255,.9);box-shadow:0 0 20px rgba(93,229,255,.55)}.intro-particles i:nth-child(1){left:8%;animation-delay:-.6s}.intro-particles i:nth-child(2){left:18%;animation-delay:-2.1s}.intro-particles i:nth-child(3){left:29%;animation-delay:-1.3s}.intro-particles i:nth-child(4){left:41%;animation-delay:-3.4s}.intro-particles i:nth-child(5){left:57%;animation-delay:-.9s}.intro-particles i:nth-child(6){left:71%;animation-delay:-2.8s}.intro-particles i:nth-child(7){left:83%;animation-delay:-1.7s}.intro-particles i:nth-child(8){left:92%;animation-delay:-3.9s}
+@keyframes introPulseBar{0%,100%{transform:translateX(0)}50%{transform:translateX(190%)}}
+@keyframes introFloat{0%{transform:translate3d(0,-10vh,0) scale(.8);opacity:0}14%{opacity:1}100%{transform:translate3d(-4vw,115vh,0) scale(1.15);opacity:.82}}
+.team-save-zone-v12{display:grid;gap:10px}.tv-intro-status{margin:12px auto 8px;padding:11px 14px;border-radius:14px;background:rgba(12,54,112,.08);border:1px solid rgba(12,54,112,.12);color:#123c70;text-align:center;font-size:13px;font-weight:800}.tv-intro-status.ready{background:rgba(24,155,92,.12);border-color:rgba(24,155,92,.22);color:#176341}
+@media(max-width:760px){.intro-card{width:92vw;min-height:64vh;border-radius:28px}.intro-card p{max-width:100%}.intro-logo{gap:10px}}

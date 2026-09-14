@@ -55,6 +55,7 @@ def default_state() -> Dict[str, Any]:
         "fast_money": default_fast_money(),
         "events": [],
         "next_event_id": 1,
+        "public_started": False,
     }
 
 
@@ -102,6 +103,7 @@ def sanitize_state(raw: Dict[str, Any] | None) -> Dict[str, Any]:
     base["control_team"] = control_team if control_team in (0, 1) else None
     base["question_visible"] = bool(base.get("question_visible", False))
     base["game_over"] = bool(base.get("game_over", False))
+    base["public_started"] = bool(base.get("public_started", False))
     winner = base.get("winner")
     try:
         winner = int(winner) if winner is not None else None
@@ -337,6 +339,13 @@ def award_round(state: Dict[str, Any], team_index: int, reason: str = "ronda") -
     return points
 
 
+def start_public_game(state: Dict[str, Any]) -> None:
+    if state.get("public_started"):
+        raise ValueError("La pantalla pública ya fue iniciada.")
+    state["public_started"] = True
+    add_event(state, "public_started")
+
+
 def finish_game(state: Dict[str, Any]) -> int | None:
     if state.get("game_over"):
         raise ValueError("La partida ya fue finalizada.")
@@ -557,6 +566,7 @@ def public_state(state: Dict[str, Any], bank: List[Dict[str, Any]], now: float |
         "control_team": state.get("control_team"),
         "game_over": bool(state.get("game_over", False)),
         "winner": state.get("winner"),
+        "public_started": bool(state.get("public_started", False)),
         "timer": timer,
         "fast_money": {
             "target": int(state["fast_money"]["target"]),

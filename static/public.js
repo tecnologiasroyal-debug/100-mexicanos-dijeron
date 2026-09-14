@@ -140,7 +140,21 @@ function renderFast(s) {
   $('#fastTarget').textContent = fm.target;
 }
 
+function toggleIntro(started) {
+  const intro = document.getElementById('introOverlay');
+  const board = document.getElementById('boardShell');
+  if (intro) intro.classList.toggle('show', !started);
+  if (board) board.classList.toggle('hidden', !started);
+}
+
 function render(s) {
+  const started = Boolean(s.public_started);
+  toggleIntro(started);
+  if (!started) {
+    const winner = document.getElementById('winnerOverlay');
+    if (winner) winner.classList.remove('show');
+    return;
+  }
   $('#team1Name').textContent = s.teams[0].name;
   $('#team2Name').textContent = s.teams[1].name;
   $('#team1Score').textContent = s.teams[0].score;

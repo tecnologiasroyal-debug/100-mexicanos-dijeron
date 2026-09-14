@@ -1,5 +1,5 @@
-const CLIENT_VERSION = "11.0.0";
-const REQUIRED_BACKEND_ACTIONS = ["start_round","show_question","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo","finish_game"];
+const CLIENT_VERSION = "12.0.0";
+const REQUIRED_BACKEND_ACTIONS = ["start_round","show_question","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo","finish_game","start_game_display"];
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 let token = sessionStorage.getItem('100mx_token') || '';
@@ -134,6 +134,8 @@ function questionForState(data) {
   return data.questions.find(q => String(q.id) === String(data.state.current_question_id));
 }
 function renderTeams(st) {
+  const tvBtn = $('#startDisplayBtn');
+  const tvStatus = $('#tvIntroStatus');
   const t1=st.teams[0], t2=st.teams[1];
   // Mientras el conductor escribe los nombres, NO reemplazamos el borrador con el refresco del servidor.
   if (!teamDraftDirty) {
@@ -152,6 +154,16 @@ function renderTeams(st) {
   if ($('#controlTeamLive')) $('#controlTeamLive').textContent = st.control_team === 0 ? t1.name : st.control_team === 1 ? t2.name : 'POR DEFINIR';
   $('#bottomTeam1').innerHTML=`${esc(t1.name)} <b>${t1.score}</b>`;
   $('#bottomTeam2').innerHTML=`${esc(t2.name)} <b>${t2.score}</b>`;
+  if (tvBtn) {
+    tvBtn.disabled = Boolean(st.public_started);
+    tvBtn.textContent = st.public_started ? 'TABLERO EN TV ACTIVO ✓' : 'INICIAR JUEGO EN TV';
+  }
+  if (tvStatus) {
+    tvStatus.textContent = st.public_started
+      ? 'La TV ya salió de la pantalla de espera y está mostrando el tablero.'
+      : 'La TV mostrará la pantalla de espera hasta que tú inicies el juego.';
+    tvStatus.classList.toggle('ready', Boolean(st.public_started));
+  }
 }
 function renderQuestionPrep(data) {
   const st=data.state, sel=$('#questionSelect'), wanted=String(st.current_question_id ?? '');
@@ -303,6 +315,7 @@ async function hideFastMoney(){
   catch(e){message(e.message,true);}
 }
 
+$('#pinInput').value = '19030792';
 $('#loginBtn').onclick=()=>login(String($('#pinInput').value||'').trim()).catch(e=>{ $('#loginMsg').textContent=e.message;$('#loginMsg').classList.remove('hidden'); });
 $('#pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click();});
 const team1Input = $('#team1NameInput');
@@ -331,6 +344,16 @@ if (team2Input) team2Input.addEventListener('keydown', e => {
 });
 
 $('#saveTeamsNextBtn').onclick=saveTeamsAndNext;
+$('#startDisplayBtn').onclick=async()=>{
+  try{
+    const n1=$('#team1NameInput').value.trim(), n2=$('#team2NameInput').value.trim();
+    if (n1 && n1 !== current?.state?.teams?.[0]?.name) await apiAction('team_name',{team:0,name:n1});
+    if (n2 && n2 !== current?.state?.teams?.[1]?.name) await apiAction('team_name',{team:1,name:n2});
+    await apiAction('start_game_display');
+    setStep(2);
+    message('La TV salió de la pantalla de espera.');
+  }catch(e){message(e.message,true);}
+};
 $('#continueGameBtn').onclick=()=>{ const st=current?.state; setStep(st?.round_awarded||st?.round_phase==='review'?5:st?.round_phase==='active'?4:st?.round_phase==='faceoff'?3:2); };
 $$('[data-goto-step]').forEach(btn=>btn.onclick=()=>{ const target=Number(btn.dataset.gotoStep); const st=current?.state; if(target===3&&!['faceoff','active'].includes(st?.round_phase)){return message('Primero inicia el duelo.',true);} if(target===4&&st?.round_phase!=='active'){return message('Primero elige quién ganó el duelo.',true);} if(target===5&&!['active','review'].includes(st?.round_phase)){return message('Primero juega la ronda.',true);} if(target===1 && current && !teamDraftDirty) syncTeamDraftFromState(current.state); setStep(target); });
 $('#questionSelect').onchange=e=>apiAction('set_question',{question_id:e.target.value}).then(()=>message('Pregunta preparada.')).catch(e=>message(e.message,true));
