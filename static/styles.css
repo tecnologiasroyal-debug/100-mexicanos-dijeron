@@ -816,3 +816,49 @@ input:focus, select:focus { border-color: #2472ce; box-shadow: 0 0 0 3px rgba(36
 .winner-confetti{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none}.winner-confetti i{position:absolute;top:-10%;width:12px;height:28px;border-radius:3px;background:#ffd94f;animation:confettiFall 3.6s linear infinite}.winner-confetti i:nth-child(2n){background:#ff744f}.winner-confetti i:nth-child(3n){background:#5de5ff}.winner-confetti i:nth-child(4n){background:#ffffff}.winner-confetti i:nth-child(1){left:6%;animation-delay:-.3s}.winner-confetti i:nth-child(2){left:14%;animation-delay:-2.1s}.winner-confetti i:nth-child(3){left:23%;animation-delay:-1.2s}.winner-confetti i:nth-child(4){left:31%;animation-delay:-2.8s}.winner-confetti i:nth-child(5){left:40%;animation-delay:-.8s}.winner-confetti i:nth-child(6){left:49%;animation-delay:-2.4s}.winner-confetti i:nth-child(7){left:58%;animation-delay:-1.6s}.winner-confetti i:nth-child(8){left:67%;animation-delay:-3s}.winner-confetti i:nth-child(9){left:75%;animation-delay:-.5s}.winner-confetti i:nth-child(10){left:83%;animation-delay:-2s}.winner-confetti i:nth-child(11){left:90%;animation-delay:-1.1s}.winner-confetti i:nth-child(12){left:96%;animation-delay:-2.7s}
 @keyframes winnerFade{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}@keyframes winnerSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}@keyframes winnerStar{to{transform:scale(1.16) rotate(9deg)}}@keyframes confettiFall{0%{transform:translate3d(0,-10vh,0) rotate(0);opacity:0}12%{opacity:1}100%{transform:translate3d(8vw,115vh,0) rotate(760deg);opacity:.85}}
 @media(max-width:760px){.winner-final-card{width:92vw;min-height:68vh;border-radius:28px}.winner-crown{top:3%;right:5%}.winner-name{font-size:clamp(38px,12vw,74px)}}
+
+
+/* =========================================================
+   V11 — CONTROL TOTAL DESDE EL MÓVIL
+   ========================================================= */
+.login-v10-card,
+.host-login-card { overflow:hidden; max-width:min(420px, calc(100vw - 24px)); }
+.login-v10-field { width:100%; min-width:0; }
+.login-v10-field .host-pin,
+#pinInput {
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  font-size:clamp(20px, 7vw, 28px);
+  letter-spacing:.09em;
+  padding:0 12px;
+}
+@media (max-width:420px) {
+  .login-v10-card,.host-login-card { padding-left:16px; padding-right:16px; }
+  .login-v10-field .host-pin,#pinInput { font-size:22px; letter-spacing:.06em; }
+}
+.faceoff-question-button {
+  width:100%;
+  border:2px solid #f3bf39;
+  cursor:pointer;
+  text-align:left;
+  transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.faceoff-question-button:not(:disabled):active { transform:scale(.985); }
+.faceoff-question-button small {
+  display:block;
+  margin-top:10px;
+  color:#ffe28a;
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.05em;
+  text-align:center;
+}
+.faceoff-question-button.question-is-visible {
+  border-color:#64d99a;
+  box-shadow:0 0 0 3px rgba(53,194,119,.15), 0 9px 24px rgba(15,47,88,.14);
+}
+.faceoff-question-button.question-is-visible small { color:#7be4ab; }
+.question-band .question.question-hidden-tv { min-height:1.1em; color:transparent; text-shadow:none; }

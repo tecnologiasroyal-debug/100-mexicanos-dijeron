@@ -41,6 +41,7 @@ from game_logic import (
     set_question,
     set_screen_mode,
     set_control_team,
+    show_question,
     set_team_name,
     set_team_score,
     start_timer,
@@ -60,11 +61,12 @@ HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", os.environ.get("CIEN_MEXICANOS_PORT", "8765")))
 HOSTED = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-APP_VERSION = "10.0.0"
+APP_VERSION = "11.0.0"
+FIXED_CONTROL_PIN = "19030792"
 
 SUPPORTED_ACTIONS = {
     "undo", "set_question", "start_round", "next_question", "set_multiplier",
-    "set_control_team", "faceoff_miss", "reveal", "strike", "clear_strikes", "award",
+    "set_control_team", "show_question", "faceoff_miss", "reveal", "strike", "clear_strikes", "award",
     "team_name", "score", "timer_config", "timer_start", "timer_pause",
     "timer_reset", "screen_mode", "fast_update", "fast_reveal",
     "fast_hide_all", "round_reset", "reset_usage", "new_game", "restore_demo", "finish_game",
@@ -119,12 +121,8 @@ def local_ip() -> str:
 
 
 def load_or_create_config() -> Dict[str, Any]:
-    cfg = load_json(CONFIG_FILE, {})
-    env_pin = str(os.environ.get("CONTROL_PIN", "")).strip()
-    pin = env_pin or str(cfg.get("control_pin", ""))
-    if len(pin) != 6 or not pin.isdigit():
-        pin = f"{secrets.randbelow(1_000_000):06d}"
-    cfg = {"control_pin": pin}
+    # V11: PIN fijo solicitado por el usuario. Se ignoran valores antiguos de config/env.
+    cfg = {"control_pin": FIXED_CONTROL_PIN}
     atomic_json_write(CONFIG_FILE, cfg)
     return cfg
 
@@ -321,9 +319,13 @@ class GameApp:
                     set_multiplier(self.state, self.bank, int(payload.get("multiplier", 1)))
                 elif action == "set_control_team":
                     set_control_team(self.state, int(payload.get("team", -1)))
+                elif action == "show_question":
+                    show_question(self.state)
                 elif action == "faceoff_miss":
                     if self.state.get("round_phase") != "faceoff":
                         raise UserError("Este botón solo se usa durante el duelo inicial.")
+                    if not self.state.get("question_visible"):
+                        raise UserError("Primero lee la pregunta y pulsa MOSTRAR EN TV.")
                     add_event(self.state, "faceoff_miss")
                 elif action == "reveal":
                     reveal_answer(self.state, self.bank, int(payload.get("index", -1)))

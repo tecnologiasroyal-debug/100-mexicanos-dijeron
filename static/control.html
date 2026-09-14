@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#061b40" />
   <title>Conductor — 100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css?v=10.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=11.0" />
 </head>
 <body class="app-body control-body host-v5">
   <section id="loginView" class="host-login login-v10">
@@ -19,11 +19,11 @@
       <p class="host-muted">Escribe tu código privado para comenzar.</p>
       <div class="login-v10-field">
         <label for="pinInput">CÓDIGO DE ACCESO</label>
-        <input id="pinInput" class="host-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" enterkeyhint="go" />
+        <input id="pinInput" class="host-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="••••••••" autocomplete="one-time-code" enterkeyhint="go" />
       </div>
       <button id="loginBtn" class="host-primary host-big">ENTRAR</button>
       <div id="loginMsg" class="notice error hidden"></div>
-      <div class="host-credit">Desarrollado por Carlos Rivas · V10</div>
+      <div class="host-credit">Desarrollado por Carlos Rivas · V11</div>
     </div>
   </section>
 
@@ -124,10 +124,11 @@
             <p>Pasa un participante de cada equipo a los zumbadores. Pregunta primero a quien presionó antes y luego decide qué familia continúa.</p>
           </div>
 
-          <article class="host-question-live faceoff-question">
+          <button id="showQuestionBtn" class="host-question-live faceoff-question faceoff-question-button" type="button">
             <span>PREGUNTA DEL DUELO</span>
             <h2 id="faceoffQuestionText">Pregunta actual</h2>
-          </article>
+            <small id="showQuestionHint">LÉELA EN VOZ ALTA Y TOCA AQUÍ PARA MOSTRARLA EN LA TV</small>
+          </button>
 
           <div class="faceoff-buzzer-row">
             <article class="faceoff-buzzer blue">
@@ -258,7 +259,7 @@
         </div>
         <button id="boardBtn" class="host-bottom-action">▣ <span>TABLERO</span></button>
       </div>
-      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V10</div>
+      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V11</div>
     </div>
 
     <!-- DINERO RÁPIDO COMO MODO SEPARADO -->
@@ -324,6 +325,6 @@
   </div>
 
   <div id="actionToast" class="action-toast">Listo.</div>
-  <script src="/static/control.js?v=10.0"></script>
+  <script src="/static/control.js?v=11.0"></script>
 </body>
 </html>

@@ -42,6 +42,7 @@ def default_state() -> Dict[str, Any]:
         "round_awarded": False,
         "round_phase": "ready",
         "control_team": None,
+        "question_visible": False,
         "last_award": None,
         "game_over": False,
         "winner": None,
@@ -99,6 +100,7 @@ def sanitize_state(raw: Dict[str, Any] | None) -> Dict[str, Any]:
     except Exception:
         control_team = None
     base["control_team"] = control_team if control_team in (0, 1) else None
+    base["question_visible"] = bool(base.get("question_visible", False))
     base["game_over"] = bool(base.get("game_over", False))
     winner = base.get("winner")
     try:
@@ -187,6 +189,7 @@ def set_question(state: Dict[str, Any], bank: List[Dict[str, Any]], question_id:
     state["round_awarded"] = False
     state["round_phase"] = "ready"
     state["control_team"] = None
+    state["question_visible"] = False
     state["last_award"] = None
     add_event(state, "question_changed", question_id=str(question["id"]))
 
@@ -249,8 +252,20 @@ def start_round(state: Dict[str, Any], bank: List[Dict[str, Any]]) -> None:
         raise ValueError("La ronda ya está en curso.")
     state["round_phase"] = "faceoff"
     state["control_team"] = None
+    state["question_visible"] = False
     add_event(state, "round_start", question_id=str(question["id"]))
 
+
+
+def show_question(state: Dict[str, Any]) -> None:
+    if state.get("screen_mode") != "normal":
+        raise ValueError("Vuelve al tablero normal antes de mostrar la pregunta.")
+    if state.get("round_phase") not in ("faceoff", "active", "review"):
+        raise ValueError("Primero inicia el duelo de la ronda.")
+    if state.get("question_visible"):
+        return
+    state["question_visible"] = True
+    add_event(state, "question_shown")
 
 def set_control_team(state: Dict[str, Any], team_index: int) -> None:
     team_index = int(team_index)
@@ -262,6 +277,8 @@ def set_control_team(state: Dict[str, Any], team_index: int) -> None:
         if state.get("round_phase") == "active":
             raise ValueError("La familia que ganó el duelo ya fue elegida. Usa Deshacer para corregirla.")
         raise ValueError("Primero inicia el duelo de la ronda.")
+    if not state.get("question_visible"):
+        raise ValueError("Primero lee la pregunta y pulsa MOSTRAR EN TV.")
     state["control_team"] = team_index
     state["round_phase"] = "active"
     add_event(state, "control_team", team=team_index)
@@ -273,6 +290,8 @@ def reveal_answer(state: Dict[str, Any], bank: List[Dict[str, Any]], index: int)
     question = get_question(bank, state.get("current_question_id"))
     if not question:
         raise ValueError("Selecciona una pregunta primero.")
+    if state.get("round_phase") == "faceoff" and not state.get("question_visible"):
+        raise ValueError("Primero lee la pregunta y pulsa MOSTRAR EN TV.")
     index = int(index)
     answers = question.get("answers", [])
     if not 0 <= index < len(answers):
@@ -522,7 +541,12 @@ def public_state(state: Dict[str, Any], bank: List[Dict[str, Any]], now: float |
     return {
         "teams": copy.deepcopy(state["teams"]),
         "screen_mode": state["screen_mode"],
-        "question": None if not question else {"id": str(question["id"]), "text": str(question["question"]), "answer_count": len(question.get("answers", []))},
+        "question": None if not question else {
+            "id": str(question["id"]),
+            "text": str(question["question"]) if bool(state.get("question_visible")) else "",
+            "answer_count": len(question.get("answers", [])),
+        },
+        "question_visible": bool(state.get("question_visible")),
         "answers": answers_public,
         "round_number": int(state.get("round_number", 1)),
         "multiplier": int(state["multiplier"]),

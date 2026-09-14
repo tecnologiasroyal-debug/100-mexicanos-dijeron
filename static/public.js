@@ -1,7 +1,7 @@
 let lastEventId = 0;
 let knownRevealed = new Set();
 let currentQuestionId = null;
-let audioEnabled = false;
+let audioEnabled = true;
 let overlayTimer = null;
 
 const $ = s => document.querySelector(s);
@@ -19,17 +19,8 @@ const sounds = {
 function play(kind) {
   if (!audioEnabled || !sounds[kind]) return;
   const a = sounds[kind];
-  try { a.currentTime = 0; a.play().catch(() => {}); } catch (_) {}
+  try { a.currentTime = 0; a.play().catch(() => { /* El navegador puede bloquear autoplay con sonido sin gesto local. */ }); } catch (_) {}
 }
-
-$('#activateBtn').onclick = async () => {
-  audioEnabled = true;
-  for (const a of Object.values(sounds)) {
-    try { a.volume = 0.001; await a.play(); a.pause(); a.currentTime = 0; a.volume = 1; } catch (_) {}
-  }
-  $('#activation').classList.add('hidden');
-  try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); } catch (_) {}
-};
 
 function esc(t) {
   return String(t ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -109,7 +100,9 @@ function renderNormal(s) {
     currentQuestionId = qid;
     knownRevealed = new Set();
   }
-  $('#questionText').textContent = s.question?.text || 'Selecciona una pregunta desde el control';
+  const qVisible = Boolean(s.question_visible);
+  $('#questionText').textContent = qVisible ? (s.question?.text || '') : '';
+  $('#questionText').classList.toggle('question-hidden-tv', !qVisible);
   const grid = $('#answersGrid');
   const newRevealed = [];
   grid.innerHTML = (s.answers || []).map((a, i) => {

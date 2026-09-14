@@ -1,5 +1,5 @@
-const CLIENT_VERSION = "10.0.0";
-const REQUIRED_BACKEND_ACTIONS = ["start_round","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo","finish_game"];
+const CLIENT_VERSION = "11.0.0";
+const REQUIRED_BACKEND_ACTIONS = ["start_round","show_question","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo","finish_game"];
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 let token = sessionStorage.getItem('100mx_token') || '';
@@ -185,15 +185,22 @@ function renderQuestionPrep(data) {
 function renderFaceoff(data) {
   const st=data.state, q=questionForState(data), revealed=new Set(st.revealed||[]);
   $('#faceoffQuestionText').textContent=q?.question||'Selecciona una pregunta';
+  const showBtn = $('#showQuestionBtn');
+  if (showBtn) {
+    const visible = Boolean(st.question_visible);
+    showBtn.classList.toggle('question-is-visible', visible);
+    showBtn.disabled = st.round_phase !== 'faceoff' || visible || st.round_awarded;
+    $('#showQuestionHint').textContent = visible ? '✓ PREGUNTA MOSTRADA EN LA TV' : 'LÉELA EN VOZ ALTA Y TOCA AQUÍ PARA MOSTRARLA EN LA TV';
+  }
   $('#faceoffAnswers').innerHTML=q?q.answers.map((a,i)=>{
-    const isRevealed=revealed.has(i), canReveal=!isRevealed&&['faceoff','active'].includes(st.round_phase)&&!st.round_awarded;
+    const isRevealed=revealed.has(i), canReveal=!isRevealed&&Boolean(st.question_visible)&&['faceoff','active'].includes(st.round_phase)&&!st.round_awarded;
     return `<button class="host-answer-btn ${isRevealed?'revealed':''}" data-faceoff-reveal="${i}" ${canReveal?'':'disabled'}>
       <span>${i+1}</span><b>${esc(a.text)}</b><strong>${a.points}</strong><em>${isRevealed?'✓':'REVELAR'}</em>
     </button>`;
   }).join(''):'<div class="notice">No hay pregunta seleccionada.</div>';
   $('#faceoffTeam1Btn').classList.toggle('selected-control',st.control_team===0);
   $('#faceoffTeam2Btn').classList.toggle('selected-control',st.control_team===1);
-  const canChoose = st.round_phase === 'faceoff' && !st.round_awarded;
+  const canChoose = st.round_phase === 'faceoff' && Boolean(st.question_visible) && !st.round_awarded;
   $('#faceoffTeam1Btn').disabled = !canChoose;
   $('#faceoffTeam2Btn').disabled = !canChoose;
 }
@@ -296,7 +303,7 @@ async function hideFastMoney(){
   catch(e){message(e.message,true);}
 }
 
-$('#loginBtn').onclick=()=>login(String($('#pinInput').value||'').padStart(6,'0')).catch(e=>{ $('#loginMsg').textContent=e.message;$('#loginMsg').classList.remove('hidden'); });
+$('#loginBtn').onclick=()=>login(String($('#pinInput').value||'').trim()).catch(e=>{ $('#loginMsg').textContent=e.message;$('#loginMsg').classList.remove('hidden'); });
 $('#pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click();});
 const team1Input = $('#team1NameInput');
 const team2Input = $('#team2NameInput');
@@ -328,6 +335,7 @@ $('#continueGameBtn').onclick=()=>{ const st=current?.state; setStep(st?.round_a
 $$('[data-goto-step]').forEach(btn=>btn.onclick=()=>{ const target=Number(btn.dataset.gotoStep); const st=current?.state; if(target===3&&!['faceoff','active'].includes(st?.round_phase)){return message('Primero inicia el duelo.',true);} if(target===4&&st?.round_phase!=='active'){return message('Primero elige quién ganó el duelo.',true);} if(target===5&&!['active','review'].includes(st?.round_phase)){return message('Primero juega la ronda.',true);} if(target===1 && current && !teamDraftDirty) syncTeamDraftFromState(current.state); setStep(target); });
 $('#questionSelect').onchange=e=>apiAction('set_question',{question_id:e.target.value}).then(()=>message('Pregunta preparada.')).catch(e=>message(e.message,true));
 $('#startRoundBtn').onclick=()=>apiAction('start_round').then(()=>{setStep(3);message('Duelo iniciado. Pasa un participante de cada equipo.');}).catch(e=>message(e.message,true));
+$('#showQuestionBtn').onclick=()=>apiAction('show_question').then(()=>message('Pregunta mostrada en la TV.')).catch(e=>message(e.message,true));
 $('#faceoffMissBtn').onclick=()=>apiAction('faceoff_miss').then(()=>message('Respuesta no encontrada. No se sumó strike.')).catch(e=>message(e.message,true));
 $('#faceoffAnswers').onclick=e=>{const b=e.target.closest('[data-faceoff-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.faceoffReveal)}).then(()=>message('Respuesta del duelo revelada.')).catch(x=>message(x.message,true));};
 async function chooseControlTeam(team){
