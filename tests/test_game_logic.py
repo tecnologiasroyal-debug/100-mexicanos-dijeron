@@ -12,6 +12,7 @@ from game_logic import (
     reveal_answer,
     set_multiplier,
     set_question,
+    set_control_team,
     start_timer,
     start_round,
     timer_remaining,
@@ -55,13 +56,19 @@ class GameLogicTests(unittest.TestCase):
             award_round(self.state, 1, "robo")
         self.assertEqual(self.state["teams"][1]["score"], 0)
 
-    def test_start_round_sets_phase_and_event(self):
+    def test_start_round_sets_faceoff_then_control_team_activates_family(self):
         start_round(self.state, BANK)
-        self.assertEqual(self.state["round_phase"], "active")
+        self.assertEqual(self.state["round_phase"], "faceoff")
+        self.assertIsNone(self.state["control_team"])
         self.assertEqual(self.state["events"][-1]["type"], "round_start")
+        set_control_team(self.state, 1)
+        self.assertEqual(self.state["round_phase"], "active")
+        self.assertEqual(self.state["control_team"], 1)
+        self.assertEqual(self.state["events"][-1]["type"], "control_team")
 
     def test_reveal_after_award_does_not_change_awarded_points(self):
         start_round(self.state, BANK)
+        set_control_team(self.state, 0)
         reveal_answer(self.state, BANK, 0)
         award_round(self.state, 0, "robo")
         self.assertEqual(self.state["round_points"], 30)

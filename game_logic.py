@@ -40,6 +40,7 @@ def default_state() -> Dict[str, Any]:
         "errors": 0,
         "round_awarded": False,
         "round_phase": "ready",
+        "control_team": None,
         "last_award": None,
         "timer": {
             "duration": 30,
@@ -84,7 +85,13 @@ def sanitize_state(raw: Dict[str, Any] | None) -> Dict[str, Any]:
     base["round_points"] = max(0, int(base.get("round_points", 0) or 0))
     base["round_awarded"] = bool(base.get("round_awarded", False))
     phase = str(base.get("round_phase", "review" if base["round_awarded"] else "ready"))
-    base["round_phase"] = phase if phase in ("ready", "active", "review") else ("review" if base["round_awarded"] else "ready")
+    base["round_phase"] = phase if phase in ("ready", "faceoff", "active", "review") else ("review" if base["round_awarded"] else "ready")
+    control_team = base.get("control_team")
+    try:
+        control_team = int(control_team) if control_team is not None else None
+    except Exception:
+        control_team = None
+    base["control_team"] = control_team if control_team in (0, 1) else None
 
     timer = base.get("timer") if isinstance(base.get("timer"), dict) else {}
     duration = max(1, min(3600, int(timer.get("duration", 30) or 30)))
@@ -165,6 +172,7 @@ def set_question(state: Dict[str, Any], bank: List[Dict[str, Any]], question_id:
     state["errors"] = 0
     state["round_awarded"] = False
     state["round_phase"] = "ready"
+    state["control_team"] = None
     state["last_award"] = None
     add_event(state, "question_changed", question_id=str(question["id"]))
 
@@ -200,10 +208,24 @@ def start_round(state: Dict[str, Any], bank: List[Dict[str, Any]]) -> None:
         raise ValueError("Selecciona una pregunta primero.")
     if state.get("round_awarded") or state.get("round_phase") == "review":
         raise ValueError("La ronda ya terminó. Pasa a la siguiente pregunta.")
-    if state.get("round_phase") == "active":
+    if state.get("round_phase") in ("faceoff", "active"):
         raise ValueError("La ronda ya está en curso.")
-    state["round_phase"] = "active"
+    state["round_phase"] = "faceoff"
+    state["control_team"] = None
     add_event(state, "round_start", question_id=str(question["id"]))
+
+
+def set_control_team(state: Dict[str, Any], team_index: int) -> None:
+    team_index = int(team_index)
+    if team_index not in (0, 1):
+        raise ValueError("Equipo no válido.")
+    if state.get("round_awarded"):
+        raise ValueError("La ronda ya fue entregada.")
+    if state.get("round_phase") not in ("faceoff", "active"):
+        raise ValueError("Primero inicia el duelo de la ronda.")
+    state["control_team"] = team_index
+    state["round_phase"] = "active"
+    add_event(state, "control_team", team=team_index)
 
 
 def reveal_answer(state: Dict[str, Any], bank: List[Dict[str, Any]], index: int) -> int:
@@ -453,6 +475,7 @@ def public_state(state: Dict[str, Any], bank: List[Dict[str, Any]], now: float |
         "errors": int(state["errors"]),
         "round_awarded": bool(state["round_awarded"]),
         "round_phase": str(state.get("round_phase", "ready")),
+        "control_team": state.get("control_team"),
         "timer": timer,
         "fast_money": {
             "target": int(state["fast_money"]["target"]),

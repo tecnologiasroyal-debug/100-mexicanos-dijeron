@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#061b40" />
   <title>Conductor — 100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="/static/styles.css?v=7.0" />
 </head>
 <body class="app-body control-body host-v5">
   <section id="loginView" class="host-login">
@@ -40,21 +40,23 @@
     </header>
 
     <div id="normalWizard">
-      <nav class="host-stepper" aria-label="Progreso de la partida">
+      <nav class="host-stepper host-stepper-5" aria-label="Progreso de la partida">
         <button class="host-step" data-goto-step="1"><b>1</b><span>Equipos</span></button>
         <i></i>
         <button class="host-step" data-goto-step="2"><b>2</b><span>Preparar</span></button>
         <i></i>
-        <button class="host-step" data-goto-step="3"><b>3</b><span>Jugar</span></button>
+        <button class="host-step" data-goto-step="3"><b>3</b><span>Duelo</span></button>
         <i></i>
-        <button class="host-step" data-goto-step="4"><b>4</b><span>Cerrar</span></button>
+        <button class="host-step" data-goto-step="4"><b>4</b><span>Familia</span></button>
+        <i></i>
+        <button class="host-step" data-goto-step="5"><b>5</b><span>Cerrar</span></button>
       </nav>
 
       <main class="host-main">
         <!-- PASO 1 -->
         <section id="step1" class="host-screen">
           <div class="host-screen-head">
-            <span class="host-step-label">PASO 1 DE 4</span>
+            <span class="host-step-label">PASO 1 DE 5</span>
             <h1>¿Quiénes juegan?</h1>
             <p>Configura los nombres una sola vez. Después el panel te llevará ronda por ronda.</p>
           </div>
@@ -63,25 +65,25 @@
             <article class="team-setup-card team-blue-card">
               <span class="team-chip">EQUIPO 1</span>
               <label for="team1NameInput">Nombre del equipo</label>
-              <input id="team1NameInput" type="text" maxlength="40" placeholder="Ej. Los García" />
+              <input id="team1NameInput" type="text" maxlength="40" placeholder="Ej. Los García" autocomplete="off" autocapitalize="words" enterkeyhint="next" />
               <div class="team-start-score"><span>Marcador</span><strong id="team1SetupScore">0</strong></div>
             </article>
             <article class="team-setup-card team-orange-card">
               <span class="team-chip">EQUIPO 2</span>
               <label for="team2NameInput">Nombre del equipo</label>
-              <input id="team2NameInput" type="text" maxlength="40" placeholder="Ej. Los Hernández" />
+              <input id="team2NameInput" type="text" maxlength="40" placeholder="Ej. Los Hernández" autocomplete="off" autocapitalize="words" enterkeyhint="done" />
               <div class="team-start-score"><span>Marcador</span><strong id="team2SetupScore">0</strong></div>
             </article>
           </div>
 
-          <button id="saveTeamsNextBtn" class="host-primary host-next">GUARDAR Y PREPARAR PRIMERA RONDA <span>→</span></button>
+          <div class="team-save-zone"><button id="saveTeamsNextBtn" class="host-primary host-next">GUARDAR Y CONTINUAR <span>→</span></button></div>
           <button id="continueGameBtn" class="host-ghost host-wide">Continuar partida actual</button>
         </section>
 
         <!-- PASO 2 -->
         <section id="step2" class="host-screen hidden">
           <div class="host-screen-head compact-head">
-            <span class="host-step-label">PASO 2 DE 4</span>
+            <span class="host-step-label">PASO 2 DE 5</span>
             <h1>Prepara la ronda</h1>
             <p>Elige la pregunta y el valor de esta ronda.</p>
           </div>
@@ -107,12 +109,57 @@
             </div>
           </article>
 
-          <button id="startRoundBtn" class="host-primary host-next">▶ INICIAR RONDA</button>
+          <button id="startRoundBtn" class="host-primary host-next">▶ INICIAR DUELO</button>
           <button class="host-back" data-goto-step="1">← Volver a equipos</button>
         </section>
 
-        <!-- PASO 3 -->
+        <!-- PASO 3: DUELO INICIAL -->
         <section id="step3" class="host-screen hidden">
+          <div class="host-screen-head compact-head">
+            <span class="host-step-label">PASO 3 DE 5</span>
+            <h1>Duelo inicial</h1>
+            <p>Pasa un participante de cada equipo a los zumbadores. Pregunta primero a quien presionó antes y luego decide qué familia continúa.</p>
+          </div>
+
+          <article class="host-question-live faceoff-question">
+            <span>PREGUNTA DEL DUELO</span>
+            <h2 id="faceoffQuestionText">Pregunta actual</h2>
+          </article>
+
+          <div class="faceoff-buzzer-row">
+            <article class="faceoff-buzzer blue">
+              <small>ZUMBADOR AZUL</small>
+              <strong id="faceoffTeam1Name">Equipo 1</strong>
+              <span>Participante del equipo 1</span>
+            </article>
+            <div class="faceoff-vs">VS</div>
+            <article class="faceoff-buzzer orange">
+              <small>ZUMBADOR NARANJA</small>
+              <strong id="faceoffTeam2Name">Equipo 2</strong>
+              <span>Participante del equipo 2</span>
+            </article>
+          </div>
+
+          <article class="host-panel faceoff-help">
+            <div class="host-panel-title"><span>Respuestas del cara a cara</span><small>Revela solo lo que contesten</small></div>
+            <p>Si el primero no consigue la respuesta más alta, pregunta al participante contrario. Puedes revelar ambas antes de decidir quién gana el control.</p>
+            <div id="faceoffAnswers" class="host-answer-grid faceoff-answers"></div>
+          </article>
+
+          <div class="faceoff-decision">
+            <span>¿QUIÉN GANÓ EL DUELO?</span>
+            <p>Selecciona la familia que continuará respondiendo esta ronda.</p>
+            <div class="winner-grid faceoff-winner-grid">
+              <button id="faceoffTeam1Btn" class="winner-btn winner-blue"><span id="faceoffDecisionName1">EQUIPO 1</span><b>CONTINUAR CON ESTE EQUIPO</b></button>
+              <button id="faceoffTeam2Btn" class="winner-btn winner-orange"><span id="faceoffDecisionName2">EQUIPO 2</span><b>CONTINUAR CON ESTE EQUIPO</b></button>
+            </div>
+          </div>
+          <button class="host-back" data-goto-step="2">← Volver a preparar ronda</button>
+        </section>
+
+        <!-- PASO 4: JUEGA LA FAMILIA -->
+        <section id="step4" class="host-screen hidden">
+          <div class="control-team-banner">EN CONTROL: <strong id="controlTeamLive">EQUIPO</strong></div>
           <div class="live-topline">
             <div><span>RONDA EN JUEGO</span><b id="liveMultiplier">×1</b></div>
             <div class="live-pot"><span>BOLSA</span><strong id="roundPointsControl">0</strong></div>
@@ -149,12 +196,13 @@
           </div>
 
           <button id="goAwardBtn" class="host-gold host-next">IR A ENTREGA DE PUNTOS <span>→</span></button>
+          <button class="host-back" data-goto-step="3">← Volver al duelo</button>
         </section>
 
-        <!-- PASO 4 -->
-        <section id="step4" class="host-screen hidden">
+        <!-- PASO 5 -->
+        <section id="step5" class="host-screen hidden">
           <div class="host-screen-head compact-head">
-            <span class="host-step-label">PASO 4 DE 4</span>
+            <span class="host-step-label">PASO 5 DE 5</span>
             <h1 id="closeTitle">Cierra la ronda</h1>
             <p id="closeSubtitle">Indica quién se lleva los puntos de la bolsa.</p>
           </div>
@@ -174,7 +222,7 @@
               <button id="awardTeam1" class="winner-btn winner-blue"><span id="awardName1">EQUIPO 1</span><b>ENTREGAR</b></button>
               <button id="awardTeam2" class="winner-btn winner-orange"><span id="awardName2">EQUIPO 2</span><b>ENTREGAR</b></button>
             </div>
-            <button class="host-back" data-goto-step="3">← Regresar a la ronda</button>
+            <button class="host-back" data-goto-step="4">← Regresar a la ronda</button>
           </div>
 
           <div id="reviewArea" class="hidden">
@@ -265,6 +313,6 @@
   </div>
 
   <div id="actionToast" class="action-toast">Listo.</div>
-  <script src="/static/control.js"></script>
+  <script src="/static/control.js?v=7.0"></script>
 </body>
 </html>

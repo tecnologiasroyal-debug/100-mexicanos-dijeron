@@ -46,6 +46,7 @@ function eventText(e, state) {
     const name = state.teams[e.team]?.name || `Equipo ${e.team + 1}`;
     return `${String(e.reason || 'Ronda').toUpperCase()}: ${name} +${e.points}`;
   }
+  if (e.type === 'control_team') { const name = state.teams[e.team]?.name || `Equipo ${e.team + 1}`; return `CONTINÚA: ${name}`; }
   if (e.type === 'undo') return 'ACCIÓN DESHECHA';
   if (e.type === 'timer_timeout') return 'TIEMPO AGOTADO';
   return '';

@@ -5,11 +5,25 @@ let current = null;
 let uiStep = Number(sessionStorage.getItem('100mx_host_step') || 1);
 let awardReason = 'ronda';
 let toastTimer = null;
+let teamDraftDirty = false;
+let lastTeamDraft = ['', ''];
 
 function esc(t) {
   return String(t ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
 function setIfNotFocused(el, value) { if (el && document.activeElement !== el) el.value = value; }
+function isFormEditing() {
+  const el = document.activeElement;
+  return !!el && ['INPUT','TEXTAREA','SELECT'].includes(el.tagName);
+}
+function syncTeamDraftFromState(st) {
+  const a = $('#team1NameInput'), b = $('#team2NameInput');
+  if (!a || !b) return;
+  a.value = st.teams[0].name;
+  b.value = st.teams[1].name;
+  lastTeamDraft = [a.value, b.value];
+  teamDraftDirty = false;
+}
 function message(text, isError=false) {
   const el = $('#actionToast');
   if (!el) return;
@@ -59,9 +73,10 @@ async function refresh(initial=false) {
     if (initial) {
       const st = current.state;
       if (st.screen_mode === 'fast_money') showFastMoney(false);
-      else if (st.round_awarded || st.round_phase === 'review') uiStep = 4;
-      else if (st.round_phase === 'active') uiStep = 3;
-      else uiStep = Math.min(4, Math.max(1, uiStep || 1));
+      else if (st.round_awarded || st.round_phase === 'review') uiStep = 5;
+      else if (st.round_phase === 'active') uiStep = 4;
+      else if (st.round_phase === 'faceoff') uiStep = 3;
+      else uiStep = uiStep === 1 ? 1 : 2;
     }
     render(current);
     $('#connectionStatus').textContent = '● Conectado';
@@ -69,8 +84,9 @@ async function refresh(initial=false) {
     if ($('#connectionStatus')) $('#connectionStatus').textContent = '● Reconectando…';
   }
 }
-function setStep(step, persist=true) {
-  uiStep = Math.min(4, Math.max(1, Number(step)));
+function setStep(step, persist=true, scroll=true) {
+  const previous = uiStep;
+  uiStep = Math.min(5, Math.max(1, Number(step)));
   if (persist) sessionStorage.setItem('100mx_host_step', String(uiStep));
   $$('.host-screen').forEach((el,i) => el.classList.toggle('hidden', i+1 !== uiStep));
   $$('.host-step').forEach((el,i) => {
@@ -78,20 +94,30 @@ function setStep(step, persist=true) {
     el.classList.toggle('done', i+1 < uiStep);
   });
   $$('.host-stepper > i').forEach((el,i) => el.classList.toggle('done', i+1 < uiStep));
-  window.scrollTo({top:0, behavior:'smooth'});
+  if (scroll && previous !== uiStep && !isFormEditing()) {
+    window.scrollTo({top:0, behavior:'auto'});
+  }
 }
 function questionForState(data) {
   return data.questions.find(q => String(q.id) === String(data.state.current_question_id));
 }
 function renderTeams(st) {
   const t1=st.teams[0], t2=st.teams[1];
-  setIfNotFocused($('#team1NameInput'), t1.name); setIfNotFocused($('#team2NameInput'), t2.name);
+  // Mientras el conductor escribe los nombres, NO reemplazamos el borrador con el refresco del servidor.
+  if (!teamDraftDirty) {
+    setIfNotFocused($('#team1NameInput'), t1.name);
+    setIfNotFocused($('#team2NameInput'), t2.name);
+    lastTeamDraft = [t1.name, t2.name];
+  }
   setIfNotFocused($('#team1EditName'), t1.name); setIfNotFocused($('#team2EditName'), t2.name);
   setIfNotFocused($('#team1ScoreInput'), t1.score); setIfNotFocused($('#team2ScoreInput'), t2.score);
   $('#team1SetupScore').textContent=t1.score; $('#team2SetupScore').textContent=t2.score;
   $('#prepTeam1Name').textContent=t1.name; $('#prepTeam2Name').textContent=t2.name;
   $('#prepTeam1Score').textContent=t1.score; $('#prepTeam2Score').textContent=t2.score;
   $('#awardName1').textContent=t1.name; $('#awardName2').textContent=t2.name;
+  $('#faceoffTeam1Name').textContent=t1.name; $('#faceoffTeam2Name').textContent=t2.name;
+  $('#faceoffDecisionName1').textContent=t1.name; $('#faceoffDecisionName2').textContent=t2.name;
+  if ($('#controlTeamLive')) $('#controlTeamLive').textContent = st.control_team === 0 ? t1.name : st.control_team === 1 ? t2.name : 'POR DEFINIR';
   $('#bottomTeam1').innerHTML=`${esc(t1.name)} <b>${t1.score}</b>`;
   $('#bottomTeam2').innerHTML=`${esc(t2.name)} <b>${t2.score}</b>`;
 }
@@ -106,7 +132,7 @@ function renderQuestionPrep(data) {
     sel.dataset.signature=signature;
   }
   sel.value=wanted;
-  sel.disabled=st.round_phase==='active'||st.round_awarded;
+  sel.disabled=['faceoff','active','review'].includes(st.round_phase)||st.round_awarded;
   const usage=data.question_usage||{remaining:data.questions.length,total:data.questions.length,warning:''};
   $('#usageCounter').textContent=`${usage.remaining} disponibles`;
   $('#usageModalCounter').textContent=`${usage.remaining} / ${usage.total}`;
@@ -114,14 +140,27 @@ function renderQuestionPrep(data) {
   if (usage.warning) { warn.textContent=usage.warning; warn.classList.remove('hidden'); } else warn.classList.add('hidden');
   $$('[data-multiplier]').forEach(btn=>{
     const n=Number(btn.dataset.multiplier); btn.classList.toggle('active',n===Number(st.multiplier));
-    btn.disabled=st.round_phase==='active'||st.round_awarded;
+    btn.disabled=['faceoff','active','review'].includes(st.round_phase)||st.round_awarded;
   });
+}
+function renderFaceoff(data) {
+  const st=data.state, q=questionForState(data), revealed=new Set(st.revealed||[]);
+  $('#faceoffQuestionText').textContent=q?.question||'Selecciona una pregunta';
+  $('#faceoffAnswers').innerHTML=q?q.answers.map((a,i)=>{
+    const isRevealed=revealed.has(i), canReveal=!isRevealed&&['faceoff','active'].includes(st.round_phase)&&!st.round_awarded;
+    return `<button class="host-answer-btn ${isRevealed?'revealed':''}" data-faceoff-reveal="${i}" ${canReveal?'':'disabled'}>
+      <span>${i+1}</span><b>${esc(a.text)}</b><strong>${a.points}</strong><em>${isRevealed?'✓':'REVELAR'}</em>
+    </button>`;
+  }).join(''):'<div class="notice">No hay pregunta seleccionada.</div>';
+  $('#faceoffTeam1Btn').classList.toggle('selected-control',st.control_team===0);
+  $('#faceoffTeam2Btn').classList.toggle('selected-control',st.control_team===1);
 }
 function renderLive(data) {
   const st=data.state, q=questionForState(data), revealed=new Set(st.revealed||[]);
   $('#liveMultiplier').textContent=`×${st.multiplier}`;
   $('#roundPointsControl').textContent=st.round_points;
   $('#liveQuestionText').textContent=q?.question||'Selecciona una pregunta';
+  $('.control-team-banner')?.classList.toggle('orange-control', st.control_team===1);
   $('#strikeCount').textContent=`${st.errors} / 3`;
   $$('#strikeVisual span').forEach((x,i)=>x.classList.toggle('active',st.errors>i));
   $('#strikeBtn').disabled=st.round_phase!=='active'||st.errors>=3||st.round_awarded;
@@ -170,9 +209,9 @@ function renderFast(data) {
 }
 function render(data) {
   const st=data.state;
-  renderTeams(st); renderQuestionPrep(data); renderLive(data); renderClose(data); renderFast(data);
+  renderTeams(st); renderQuestionPrep(data); renderFaceoff(data); renderLive(data); renderClose(data); renderFast(data);
   $('#undoBtn').disabled=!data.undo_available;
-  setStep(uiStep,false);
+  setStep(uiStep,false,false);
 }
 function collectFast() {
   const rows=$$('[data-fast-row]').map(row=>({
@@ -188,11 +227,15 @@ async function saveTeamsAndNext(){
   try{
     const n1=$('#team1NameInput').value.trim(), n2=$('#team2NameInput').value.trim();
     if(!n1||!n2) throw new Error('Escribe el nombre de los dos equipos.');
-    await apiAction('team_name',{team:0,name:n1}); await apiAction('team_name',{team:1,name:n2});
+    await apiAction('team_name',{team:0,name:n1});
+    await apiAction('team_name',{team:1,name:n2});
+    teamDraftDirty = false;
+    lastTeamDraft = [n1, n2];
+    if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
     setStep(2); message('Equipos guardados. Prepara la primera ronda.');
   }catch(e){message(e.message,true);}
 }
-async function award(team){ try{await apiAction('award',{team,reason:awardReason}); setStep(4); message(`Puntos entregados a ${current.state.teams[team].name}.`);}catch(e){message(e.message,true);} }
+async function award(team){ try{await apiAction('award',{team,reason:awardReason}); setStep(5); message(`Puntos entregados a ${current.state.teams[team].name}.`);}catch(e){message(e.message,true);} }
 async function addStrike(){ try{await apiAction('strike');message('Strike marcado.');}catch(e){message(e.message,true);} }
 function openSheet(){ $('#toolsSheet').classList.remove('hidden'); $('#toolsSheet').setAttribute('aria-hidden','false'); }
 function closeSheet(){ $('#toolsSheet').classList.add('hidden'); $('#toolsSheet').setAttribute('aria-hidden','true'); }
@@ -209,12 +252,41 @@ async function hideFastMoney(){
 
 $('#loginBtn').onclick=()=>login(String($('#pinInput').value||'').padStart(6,'0')).catch(e=>{ $('#loginMsg').textContent=e.message;$('#loginMsg').classList.remove('hidden'); });
 $('#pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click();});
+const team1Input = $('#team1NameInput');
+const team2Input = $('#team2NameInput');
+[team1Input, team2Input].forEach((el, idx) => {
+  if (!el) return;
+  el.addEventListener('input', () => {
+    teamDraftDirty = true;
+    lastTeamDraft[idx] = el.value;
+  });
+  el.addEventListener('focus', () => {
+    // Evita que el sondeo del servidor mueva el viewport o reescriba el campo con el teclado abierto.
+    document.body.classList.add('keyboard-editing');
+  });
+  el.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (!isFormEditing()) document.body.classList.remove('keyboard-editing');
+    }, 80);
+  });
+});
+if (team1Input) team1Input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); team2Input?.focus(); }
+});
+if (team2Input) team2Input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); team2Input.blur(); saveTeamsAndNext(); }
+});
+
 $('#saveTeamsNextBtn').onclick=saveTeamsAndNext;
-$('#continueGameBtn').onclick=()=>{ const st=current?.state; setStep(st?.round_awarded?4:st?.round_phase==='active'?3:2); };
-$$('[data-goto-step]').forEach(btn=>btn.onclick=()=>{ const target=Number(btn.dataset.gotoStep); const st=current?.state; if(target===3&&st?.round_phase!=='active'){return message('Primero inicia la ronda.',true);} if(target===4&&st?.round_phase==='ready'){return message('Primero inicia la ronda.',true);} setStep(target); });
+$('#continueGameBtn').onclick=()=>{ const st=current?.state; setStep(st?.round_awarded||st?.round_phase==='review'?5:st?.round_phase==='active'?4:st?.round_phase==='faceoff'?3:2); };
+$$('[data-goto-step]').forEach(btn=>btn.onclick=()=>{ const target=Number(btn.dataset.gotoStep); const st=current?.state; if(target===3&&!['faceoff','active'].includes(st?.round_phase)){return message('Primero inicia el duelo.',true);} if(target===4&&st?.round_phase!=='active'){return message('Primero elige quién ganó el duelo.',true);} if(target===5&&!['active','review'].includes(st?.round_phase)){return message('Primero juega la ronda.',true);} if(target===1 && current && !teamDraftDirty) syncTeamDraftFromState(current.state); setStep(target); });
 $('#questionSelect').onchange=e=>apiAction('set_question',{question_id:e.target.value}).then(()=>message('Pregunta preparada.')).catch(e=>message(e.message,true));
 $$('[data-multiplier]').forEach(btn=>btn.onclick=()=>apiAction('set_multiplier',{multiplier:Number(btn.dataset.multiplier)}).then(()=>message(`Ronda ×${btn.dataset.multiplier}.`)).catch(e=>message(e.message,true)));
-$('#startRoundBtn').onclick=()=>apiAction('start_round').then(()=>{setStep(3);message('Ronda iniciada.');}).catch(e=>message(e.message,true));
+$('#startRoundBtn').onclick=()=>apiAction('start_round').then(()=>{setStep(3);message('Duelo iniciado. Pasa un participante de cada equipo.');}).catch(e=>message(e.message,true));
+$('#faceoffAnswers').onclick=e=>{const b=e.target.closest('[data-faceoff-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.faceoffReveal)}).then(()=>message('Respuesta del duelo revelada.')).catch(x=>message(x.message,true));};
+async function chooseControlTeam(team){ try{await apiAction('set_control_team',{team});setStep(4);message(`Continúa la familia ${current.state.teams[team].name}.`);}catch(e){message(e.message,true);} }
+$('#faceoffTeam1Btn').onclick=()=>chooseControlTeam(0);
+$('#faceoffTeam2Btn').onclick=()=>chooseControlTeam(1);
 $('#answerControls').onclick=e=>{const b=e.target.closest('[data-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.reveal)}).then(()=>message('Respuesta revelada.')).catch(x=>message(x.message,true));};
 $('#strikeBtn').onclick=addStrike;
 $('#clearStrikesBtn').onclick=()=>apiAction('clear_strikes').then(()=>message('Strikes limpiados.')).catch(e=>message(e.message,true));
@@ -222,13 +294,13 @@ $('#timerSet').onclick=()=>apiAction('timer_config',{seconds:Number($('#timerSec
 $('#timerStart').onclick=()=>apiAction('timer_start').then(()=>message('Temporizador iniciado.')).catch(e=>message(e.message,true));
 $('#timerPause').onclick=()=>apiAction('timer_pause').then(()=>message('Temporizador pausado.')).catch(e=>message(e.message,true));
 $('#timerReset').onclick=()=>apiAction('timer_reset').then(()=>message('Temporizador reiniciado.')).catch(e=>message(e.message,true));
-$('#goAwardBtn').onclick=()=>setStep(4);
+$('#goAwardBtn').onclick=()=>setStep(5);
 $$('[data-reason]').forEach(btn=>btn.onclick=()=>{awardReason=btn.dataset.reason;$$('[data-reason]').forEach(x=>x.classList.toggle('active',x===btn));});
 $('#awardTeam1').onclick=()=>award(0); $('#awardTeam2').onclick=()=>award(1);
 $('#missingAnswers').onclick=e=>{const b=e.target.closest('[data-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.reveal)}).then(()=>message('Respuesta faltante descubierta.')).catch(x=>message(x.message,true));};
 $('#revealNextMissingBtn').onclick=async()=>{const st=current?.state,q=questionForState(current);const next=q?.answers.findIndex((_,i)=>!st.revealed.includes(i))??-1;if(next<0)return message('Ya se mostraron todas.');try{await apiAction('reveal',{index:next});message('Respuesta faltante descubierta.');}catch(e){message(e.message,true);}};
 $('#nextQuestionBtn').onclick=()=>apiAction('next_question').then(()=>{setStep(2);message('Siguiente ronda preparada.');}).catch(e=>message(e.message,true));
-$('#undoBtn').onclick=()=>apiAction('undo').then(()=>{const st=current.state;setStep(st.round_awarded?4:st.round_phase==='active'?3:2);message('Última acción deshecha.');}).catch(e=>message(e.message,true));
+$('#undoBtn').onclick=()=>apiAction('undo').then(()=>{const st=current.state;setStep(st.round_awarded||st.round_phase==='review'?5:st.round_phase==='active'?4:st.round_phase==='faceoff'?3:2);message('Última acción deshecha.');}).catch(e=>message(e.message,true));
 $('#boardBtn').onclick=()=>window.open('/public','_blank');
 
 $('#menuBtn').onclick=openSheet; $('#closeMenuBtn').onclick=closeSheet; $('#closeMenuX').onclick=closeSheet;
@@ -250,4 +322,6 @@ $('#fastEditor').onclick=async e=>{const b=e.target.closest('[data-fast-reveal]'
 const codeFromUrl=new URLSearchParams(location.search).get('code');
 if(codeFromUrl)login(codeFromUrl).catch(e=>showLogin(e.message));
 else if(token){$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');refresh(true);}else showLogin();
-setInterval(()=>{if(token&&!$('#appView').classList.contains('hidden'))refresh(false);},800);
+setInterval(()=>{
+  if(token&&!$('#appView').classList.contains('hidden')&&!isFormEditing()) refresh(false);
+},1200);

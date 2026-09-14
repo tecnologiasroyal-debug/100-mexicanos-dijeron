@@ -18,6 +18,7 @@
   "errors": 0,
   "round_awarded": false,
   "round_phase": "ready",
+  "control_team": null,
   "last_award": null,
   "timer": {
     "duration": 30,

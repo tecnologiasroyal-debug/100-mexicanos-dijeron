@@ -1,4 +1,4 @@
-# 100 Mexicanos Dijeron — V4 COMPLETO
+# 100 Mexicanos Dijeron — V7 DUELO INICIAL
 
 Versión preparada para `rivaspruebas.pythonanywhere.com` o cualquier cuenta equivalente de PythonAnywhere.
 
@@ -50,5 +50,21 @@ Esta versión incluye el motor de historial/uso, pero **no añade todavía las 5
 
 PythonAnywhere guarda `data/question_usage.json`, `data/game_state.json` y `data/question_bank.json` en el almacenamiento de tu cuenta. Por eso el historial de usadas se conserva entre sesiones y días, salvo que tú lo reinicies o reemplaces esos archivos.
 
-## Panel del conductor V5
-El panel del conductor ahora usa un flujo guiado de cuatro pasos: Equipos, Preparar, Jugar y Cerrar. Las funciones secundarias quedaron dentro de un menú lateral para evitar una página larga con scroll. El logo de 100 Mexicanos Dijeron y el crédito "Desarrollado por Carlos Rivas" están visibles también en el panel del conductor.
+## Panel del conductor V7
+El panel del conductor ahora usa un flujo guiado de cinco pasos: **Equipos → Preparar → Duelo → Familia → Cerrar**. Antes de que la familia empiece a responder, pasan dos participantes a los zumbadores físicos. El conductor revela las respuestas que den en el cara a cara y selecciona manualmente qué equipo ganó el duelo y continúa con la ronda. Las funciones secundarias permanecen dentro del menú lateral para evitar una página larga con scroll. El logo de 100 Mexicanos Dijeron y el crédito "Desarrollado por Carlos Rivas" siguen visibles en el panel.
+
+### Zumbadores
+Esta versión **no intenta leer electrónicamente los zumbadores físicos**. Tú observas quién presionó primero y, desde el celular, eliges qué equipo ganó el duelo. Si más adelante quieres que los botones USB/Bluetooth se detecten automáticamente, eso requiere una integración específica según el modelo de los zumbadores.
+
+
+## V6 — Teclado móvil
+Se corrigió el formulario de equipos para que el refresco en vivo no borre ni mueva los campos mientras el conductor escribe desde un celular.
+
+
+## V7 — Duelo inicial
+- Paso 3 dedicado al cara a cara de los dos participantes.
+- Permite revelar las respuestas que den durante el duelo.
+- Botones grandes para elegir **qué equipo ganó el duelo**.
+- El equipo elegido queda marcado como **EN CONTROL** durante la ronda familiar.
+- Los STRIKES solo se habilitan después de elegir quién continúa.
+- El cierre de ronda conserva robo, entrega única de puntos y revelado de faltantes.

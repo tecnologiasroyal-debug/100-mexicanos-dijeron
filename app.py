@@ -38,6 +38,7 @@ from game_logic import (
     set_multiplier,
     set_question,
     set_screen_mode,
+    set_control_team,
     set_team_name,
     set_team_score,
     start_timer,
@@ -244,6 +245,7 @@ class GameApp:
         self.state["errors"] = 0
         self.state["round_awarded"] = False
         self.state["round_phase"] = "ready"
+        self.state["control_team"] = None
         self.state["last_award"] = None
         add_event(self.state, "round_reset")
 
@@ -284,13 +286,19 @@ class GameApp:
                     set_question(self.state, self.bank, self.next_unused_question_id())
                 elif action == "set_multiplier":
                     set_multiplier(self.state, self.bank, int(payload.get("multiplier", 1)))
+                elif action == "set_control_team":
+                    set_control_team(self.state, int(payload.get("team", -1)))
                 elif action == "reveal":
                     reveal_answer(self.state, self.bank, int(payload.get("index", -1)))
                 elif action == "strike":
+                    if self.state.get("round_phase") != "active":
+                        raise UserError("Primero elige qué equipo ganó el duelo inicial.")
                     add_strike(self.state)
                 elif action == "clear_strikes":
                     clear_strikes(self.state)
                 elif action == "award":
+                    if self.state.get("round_phase") != "active":
+                        raise UserError("Primero elige qué equipo quedó en control de la ronda.")
                     award_round(self.state, int(payload.get("team", -1)), str(payload.get("reason", "ronda")))
                 elif action == "team_name":
                     set_team_name(self.state, int(payload.get("team", -1)), str(payload.get("name", "")))

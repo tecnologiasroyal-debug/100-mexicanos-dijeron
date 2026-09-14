@@ -89,6 +89,8 @@ class SyncHttpTests(unittest.TestCase):
     def test_undo_after_award_restores_score_and_round(self):
         login = self.request_json("/api/login", method="POST", data={"code": app_module.APP.config["control_pin"]})
         token = login["token"]
+        self.request_json("/api/action", method="POST", token=token, data={"action":"start_round","payload":{}})
+        self.request_json("/api/action", method="POST", token=token, data={"action":"set_control_team","payload":{"team":0}})
         self.request_json("/api/action", method="POST", token=token, data={"action":"reveal","payload":{"index":0}})
         awarded = self.request_json("/api/action", method="POST", token=token, data={"action":"award","payload":{"team":0,"reason":"ronda"}})["data"]
         self.assertEqual(awarded["state"]["teams"][0]["score"], 40)
@@ -104,6 +106,10 @@ class SyncHttpTests(unittest.TestCase):
         token = login["token"]
         started = self.request_json("/api/action", method="POST", token=token, data={"action":"start_round","payload":{}})["data"]
         self.assertEqual(started["question_usage"]["used"], 1)
+        self.assertEqual(started["state"]["round_phase"], "faceoff")
+        controlled = self.request_json("/api/action", method="POST", token=token, data={"action":"set_control_team","payload":{"team":0}})["data"]
+        self.assertEqual(controlled["state"]["round_phase"], "active")
+        self.assertEqual(controlled["state"]["control_team"], 0)
         self.request_json("/api/action", method="POST", token=token, data={"action":"reveal","payload":{"index":0}})
         awarded = self.request_json("/api/action", method="POST", token=token, data={"action":"award","payload":{"team":0,"reason":"robo"}})["data"]
         self.assertEqual(awarded["state"]["round_points"], 40)

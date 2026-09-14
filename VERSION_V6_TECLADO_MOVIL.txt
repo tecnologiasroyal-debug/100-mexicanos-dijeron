@@ -1,0 +1,8 @@
+V6 — Corrección de captura de nombres en celular
+
+- El refresco automático ya no reescribe campos mientras se escribe.
+- El panel ya no hace scroll al inicio cada 1.2 s.
+- Se pausa la sincronización mientras un input/select está enfocado.
+- Enter en Equipo 1 pasa a Equipo 2; Enter en Equipo 2 guarda y continúa.
+- Botón Guardar y continuar queda accesible y estable.
+- Se agrega cache-busting ?v=6.0 para forzar CSS/JS nuevos.

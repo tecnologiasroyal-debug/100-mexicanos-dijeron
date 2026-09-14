@@ -1,0 +1,18 @@
+100 Mexicanos Dijeron — V7 DUELO INICIAL
+
+Nuevo flujo del conductor:
+1. Equipos
+2. Preparar ronda
+3. Duelo inicial con los dos participantes y zumbadores físicos
+4. Juega la familia ganadora del duelo
+5. Cerrar ronda / robo / revelar faltantes
+
+Los zumbadores físicos no necesitan conectarse al software en esta versión. El conductor observa quién presionó primero, revela las respuestas del cara a cara y selecciona manualmente qué equipo ganó el control de la ronda.
+
+Cambios técnicos:
+- Nuevo estado round_phase=faceoff.
+- Nuevo campo persistente control_team.
+- Nueva acción set_control_team.
+- El tablero público muestra un aviso breve indicando qué equipo continúa.
+- STRIKES se habilitan únicamente después de elegir el equipo en control.
+- Se conserva el sistema de sonidos, historial de preguntas usadas, Excel y Dinero rápido.
