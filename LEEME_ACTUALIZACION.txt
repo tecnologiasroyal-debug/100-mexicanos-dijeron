@@ -1,0 +1,50 @@
+ACTUALIZACIÓN V9 — SOLO 7 ARCHIVOS
+===================================
+
+Este parche evita subir los más de 100 archivos del ZIP completo.
+NO contiene data/ ni modifica preguntas, historial o partida guardada.
+
+ARCHIVOS A ACTUALIZAR
+---------------------
+RAÍZ DEL REPOSITORIO:
+- app.py
+- game_logic.py
+
+CARPETA static/:
+- control.html
+- control.js
+- public.html
+- public.js
+- styles.css
+
+PASO 1 — GITHUB
+----------------
+A) En la raíz de tu repositorio, Add file > Upload files:
+   sube app.py y game_logic.py > Commit changes.
+
+B) Entra a la carpeta static de GitHub > Add file > Upload files:
+   sube control.html, control.js, public.html, public.js y styles.css
+   > Commit changes.
+
+PASO 2 — PYTHONANYWHERE
+-----------------------
+Abre Consoles > Bash y ejecuta:
+
+cd ~/100-mexicanos-dijeron
+git fetch origin
+git checkout origin/main -- app.py game_logic.py static/control.html static/control.js static/public.html static/public.js static/styles.css
+
+PASO 3 — VERIFICACIÓN
+---------------------
+grep -Rni "NO ESTÁ EN EL TABLERO" static
+grep -Rni "PUNTOS AL DOBLE" static
+
+Deben salir resultados.
+
+PASO 4 — RECARGAR
+-----------------
+Ve a Web > Reload rivaspruebas.pythonanywhere.com
+
+Abre:
+https://rivaspruebas.pythonanywhere.com/control?v=9
+https://rivaspruebas.pythonanywhere.com/public?v=9
