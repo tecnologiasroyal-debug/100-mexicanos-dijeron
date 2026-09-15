@@ -1,7 +1,8 @@
 let lastEventId = 0;
 let knownRevealed = new Set();
 let currentQuestionId = null;
-let audioEnabled = true;
+let audioEnabled = false;
+let tvAudioReady = false;
 let overlayTimer = null;
 
 const $ = s => document.querySelector(s);
@@ -15,6 +16,49 @@ const sounds = {
   timer_timeout: $('#soundTimeout'),
   game_finished: $('#soundVictory')
 };
+
+async function reportTvReady(ready) {
+  try {
+    await fetch('/api/public/ready', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ready:Boolean(ready)}),
+      cache:'no-store'
+    });
+  } catch (_) {}
+}
+
+function updateAudioGate(started) {
+  const gate = document.getElementById('audioGate');
+  const introBtn = document.getElementById('tvReadyBtn');
+  const msg = document.getElementById('tvReadyMsg');
+  if (gate) gate.classList.toggle('hidden', !started || tvAudioReady);
+  if (introBtn) {
+    introBtn.disabled = tvAudioReady;
+    introBtn.textContent = tvAudioReady ? 'TV LISTA ✓ · SONIDO ACTIVADO' : 'TV LISTA · ACTIVAR SONIDO';
+  }
+  if (msg) msg.textContent = tvAudioReady ? 'Sonido activado. Ya puedes controlar todo desde el celular.' : 'Pulsa una vez para habilitar los sonidos del juego en esta TV.';
+}
+
+async function unlockTvAudio() {
+  const unique = [...new Set(Object.values(sounds).filter(Boolean))];
+  for (const a of unique) {
+    try {
+      const oldVol = a.volume;
+      a.volume = 0.001;
+      a.currentTime = 0;
+      const p = a.play();
+      if (p && typeof p.then === 'function') await p;
+      a.pause();
+      a.currentTime = 0;
+      a.volume = oldVol;
+    } catch (_) {}
+  }
+  audioEnabled = true;
+  tvAudioReady = true;
+  updateAudioGate(Boolean(window.__lastPublicStarted));
+  await reportTvReady(true);
+}
 
 function play(kind) {
   if (!audioEnabled || !sounds[kind]) return;
@@ -141,10 +185,12 @@ function renderFast(s) {
 }
 
 function toggleIntro(started) {
+  window.__lastPublicStarted = Boolean(started);
   const intro = document.getElementById('introOverlay');
   const board = document.getElementById('boardShell');
   if (intro) intro.classList.toggle('show', !started);
   if (board) board.classList.toggle('hidden', !started);
+  updateAudioGate(Boolean(started));
 }
 
 function render(s) {
@@ -166,9 +212,6 @@ function render(s) {
   $('#multiplier').classList.toggle('triple', m === 3);
   $('#multiplierLabel').textContent = m === 2 ? 'PUNTOS AL DOBLE' : m === 3 ? 'PUNTOS AL TRIPLE' : 'RONDA NORMAL';
   $('#multiplierLabel').classList.toggle('hot', m > 1);
-  const remaining = Number(s.timer.remaining || 0);
-  $('#timer').textContent = remaining;
-  $('#timer').classList.toggle('danger', remaining <= 5 && s.timer.running);
   $('#strikes').innerHTML = [1,2,3].map(i => `<div class="strike-small ${s.errors >= i ? 'active' : ''}">X</div>`).join('');
   const isFast = s.screen_mode === 'fast_money';
   $('#strikes').style.visibility = isFast ? 'hidden' : 'visible';
@@ -188,4 +231,8 @@ async function poll() {
   } catch (_) {}
   setTimeout(poll, 250);
 }
+document.getElementById('tvReadyBtn')?.addEventListener('click', unlockTvAudio);
+document.getElementById('audioGateBtn')?.addEventListener('click', unlockTvAudio);
+// Cada carga nueva requiere un gesto del usuario para garantizar audio en navegadores modernos.
+reportTvReady(false);
 poll();

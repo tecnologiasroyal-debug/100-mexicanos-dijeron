@@ -62,7 +62,7 @@ HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", os.environ.get("CIEN_MEXICANOS_PORT", "8765")))
 HOSTED = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-APP_VERSION = "12.0.0"
+APP_VERSION = "13.0.0"
 FIXED_CONTROL_PIN = "19030792"
 
 SUPPORTED_ACTIONS = {
@@ -202,6 +202,9 @@ class GameApp:
             recompute_round_points(self.state, self.bank)
         self.history: deque[Tuple[Dict[str, Any], List[Dict[str, Any]], Dict[str, str]]] = deque(maxlen=60)
         self.session_token = secrets.token_urlsafe(32)
+        # Estado efímero del navegador de la TV; no se persiste entre reinicios del servidor.
+        self.tv_last_seen = 0.0
+        self.tv_audio_ready = False
         self.save_all()
 
     def save_all(self) -> None:
@@ -252,7 +255,18 @@ class GameApp:
                 "remaining": remaining,
                 "warning": usage_warning(remaining, len(questions)),
             },
+            "tv_status": {
+                "connected": (time.time() - float(self.tv_last_seen or 0)) < 5.0,
+                "audio_ready": bool(self.tv_audio_ready),
+            },
         }
+
+    def mark_tv_seen(self) -> None:
+        self.tv_last_seen = time.time()
+
+    def set_tv_audio_ready(self, ready: bool) -> None:
+        self.tv_last_seen = time.time()
+        self.tv_audio_ready = bool(ready)
 
     def public_payload(self) -> Dict[str, Any]:
         self.refresh_timer_if_needed()
@@ -496,6 +510,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "data": {"app_version": APP_VERSION, "supported_actions": sorted(SUPPORTED_ACTIONS)}})
         if path == "/api/public/state":
             with APP.lock:
+                APP.mark_tv_seen()
                 return self._json(200, {"ok": True, "data": APP.public_payload()})
         if path == "/api/control/state":
             if not self._authorized():
@@ -591,6 +606,12 @@ class Handler(BaseHTTPRequestHandler):
                 if secrets.compare_digest(str(data.get("code", "")), str(APP.config["control_pin"])):
                     return self._json(200, {"ok": True, "token": APP.session_token})
                 return self._error(401, "Código de control incorrecto.")
+
+            if path == "/api/public/ready":
+                data = self._read_json()
+                with APP.lock:
+                    APP.set_tv_audio_ready(bool(data.get("ready", False)))
+                return self._json(200, {"ok": True, "ready": bool(data.get("ready", False))})
 
             if path == "/api/action":
                 if not self._authorized():

@@ -1,4 +1,4 @@
-const CLIENT_VERSION = "12.0.0";
+const CLIENT_VERSION = "13.0.0";
 const REQUIRED_BACKEND_ACTIONS = ["start_round","show_question","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo","finish_game","start_game_display"];
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -42,7 +42,7 @@ function assertBackendCompatible(data) {
   const missing = REQUIRED_BACKEND_ACTIONS.filter(x => !supported.has(x));
   if (serverVersion !== CLIENT_VERSION || missing.length) {
     const detail = !serverVersion
-      ? 'El servidor es anterior a V10.'
+      ? 'El servidor es anterior a V13.'
       : `Interfaz V${CLIENT_VERSION} / servidor V${serverVersion}.`;
     const miss = missing.length ? ` Faltan acciones: ${missing.join(', ')}.` : '';
     throw new Error(`${detail}${miss} Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py, luego pulsa Reload en PythonAnywhere.`);
@@ -51,7 +51,7 @@ function assertBackendCompatible(data) {
 function friendlyActionError(action, error) {
   const text = String(error?.message || error || 'Error desconocido');
   if (/Acción no reconocida/i.test(text) || (action === 'set_control_team' && /no reconocida/i.test(text))) {
-    return new Error('El panel V10 está cargado, pero PythonAnywhere sigue ejecutando un backend anterior. Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py y pulsa Reload.');
+    return new Error('El panel V13 está cargado, pero PythonAnywhere sigue ejecutando un backend anterior. Actualiza app.py, game_logic.py y pythonanywhere_wsgi.py y pulsa Reload.');
   }
   return error instanceof Error ? error : new Error(text);
 }
@@ -232,9 +232,8 @@ function renderLive(data) {
       <span>${i+1}</span><b>${esc(a.text)}</b><strong>${a.points}</strong><em>${isRevealed?'✓':'REVELAR'}</em>
     </button>`;
   }).join(''):'<div class="notice">No hay pregunta seleccionada.</div>';
-  const rem=st.timer.running&&st.timer.end_epoch?Math.max(0,Math.ceil(st.timer.end_epoch-Date.now()/1000)):st.timer.remaining;
-  $('#timerPill').textContent=`${rem} s${st.timer.running?' ▶':''}`;
-  setIfNotFocused($('#timerSeconds'),st.timer.duration);
+  const stealHint = $('#stealHint');
+  if (stealHint) stealHint.classList.toggle('hidden', Number(st.errors||0) < 3);
 }
 function renderClose(data) {
   const st=data.state, q=questionForState(data), revealed=new Set(st.revealed||[]);
@@ -274,7 +273,31 @@ function renderFast(data) {
 }
 function render(data) {
   const st=data.state;
+  const tv = data.tv_status || {};
+  const tvBadge = $('#tvStatusBadge');
+  if (tvBadge) {
+    tvBadge.classList.remove('offline','warn','ready');
+    if (!tv.connected) { tvBadge.textContent='TV ● SIN CONEXIÓN'; tvBadge.classList.add('offline'); }
+    else if (!tv.audio_ready) { tvBadge.textContent='TV ● ACTIVA SONIDO'; tvBadge.classList.add('warn'); }
+    else { tvBadge.textContent='TV ● LISTA'; tvBadge.classList.add('ready'); }
+  }
   renderTeams(st); renderQuestionPrep(data); renderFaceoff(data); renderLive(data); renderClose(data); renderFast(data);
+  const startTvBtn = $('#startDisplayBtn');
+  if (startTvBtn) {
+    if (st.public_started) {
+      startTvBtn.disabled = true;
+      startTvBtn.textContent = 'TABLERO EN TV ACTIVO ✓';
+    } else if (!tv.connected) {
+      startTvBtn.disabled = true;
+      startTvBtn.textContent = 'ABRE LA TV PARA CONTINUAR';
+    } else if (!tv.audio_ready) {
+      startTvBtn.disabled = true;
+      startTvBtn.textContent = 'EN LA TV PULSA “TV LISTA”';
+    } else {
+      startTvBtn.disabled = false;
+      startTvBtn.textContent = 'INICIAR JUEGO EN TV';
+    }
+  }
   $('#undoBtn').disabled=!data.undo_available;
   setStep(uiStep,false,false);
 }
@@ -351,7 +374,10 @@ $('#startDisplayBtn').onclick=async()=>{
     if (n2 && n2 !== current?.state?.teams?.[1]?.name) await apiAction('team_name',{team:1,name:n2});
     await apiAction('start_game_display');
     setStep(2);
-    message('La TV salió de la pantalla de espera.');
+    const tv = current?.tv_status || {};
+    if (!tv.connected) message('Juego iniciado. Abre la pantalla pública en la TV.', true);
+    else if (!tv.audio_ready) message('Juego iniciado. En la TV pulsa TV LISTA para activar el sonido.', true);
+    else message('TV lista. Prepara la primera ronda.');
   }catch(e){message(e.message,true);}
 };
 $('#continueGameBtn').onclick=()=>{ const st=current?.state; setStep(st?.round_awarded||st?.round_phase==='review'?5:st?.round_phase==='active'?4:st?.round_phase==='faceoff'?3:2); };
@@ -380,10 +406,6 @@ $('#faceoffTeam2Btn').onclick=()=>chooseControlTeam(1);
 $('#answerControls').onclick=e=>{const b=e.target.closest('[data-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.reveal)}).then(()=>message('Respuesta revelada.')).catch(x=>message(x.message,true));};
 $('#strikeBtn').onclick=addStrike;
 $('#clearStrikesBtn').onclick=()=>apiAction('clear_strikes').then(()=>message('Strikes limpiados.')).catch(e=>message(e.message,true));
-$('#timerSet').onclick=()=>apiAction('timer_config',{seconds:Number($('#timerSeconds').value||30)}).then(()=>message('Temporizador ajustado.')).catch(e=>message(e.message,true));
-$('#timerStart').onclick=()=>apiAction('timer_start').then(()=>message('Temporizador iniciado.')).catch(e=>message(e.message,true));
-$('#timerPause').onclick=()=>apiAction('timer_pause').then(()=>message('Temporizador pausado.')).catch(e=>message(e.message,true));
-$('#timerReset').onclick=()=>apiAction('timer_reset').then(()=>message('Temporizador reiniciado.')).catch(e=>message(e.message,true));
 $('#goAwardBtn').onclick=()=>setStep(5);
 $$('[data-reason]').forEach(btn=>btn.onclick=()=>{awardReason=btn.dataset.reason;$$('[data-reason]').forEach(x=>x.classList.toggle('active',x===btn));});
 $('#awardTeam1').onclick=()=>award(0); $('#awardTeam2').onclick=()=>award(1);

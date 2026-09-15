@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css?v=12.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=13.0" />
 </head>
 <body class="public-body">
   <section id="introOverlay" class="intro-overlay show" aria-live="polite">
@@ -19,9 +19,14 @@
       <h1>Esperando anfitrión</h1>
       <p>El juego iniciará cuando el conductor lo indique desde su celular.</p>
       <div class="intro-pulse-bar"><span></span></div>
+      <button id="tvReadyBtn" class="tv-ready-btn" type="button">TV LISTA · ACTIVAR SONIDO</button>
+      <div id="tvReadyMsg" class="tv-ready-msg">Pulsa una vez para habilitar los sonidos del juego en esta TV.</div>
     </div>
     <div class="intro-credit">Desarrollado por Carlos Rivas</div>
   </section>
+  <div id="audioGate" class="audio-gate hidden">
+    <button id="audioGateBtn" type="button">TV LISTA · ACTIVAR SONIDO</button>
+  </div>
   <div class="stage-glow stage-glow-left"></div>
   <div class="stage-glow stage-glow-right"></div>
 
@@ -52,7 +57,6 @@
       <div id="questionText" class="question">Preparando tablero…</div>
       <div class="meta-strip">
         <span id="multiplier" class="multiplier-pill">×1</span><span id="multiplierLabel" class="multiplier-label">RONDA NORMAL</span>
-        <span class="timer-label">TIEMPO <span id="timer" class="timer-display">30</span></span>
       </div>
     </section>
 
@@ -112,6 +116,6 @@
   <audio id="soundError" preload="auto"><source src="/static/sounds/strike.mp3" type="audio/mpeg"><source src="/static/sounds/error.wav" type="audio/wav"></audio>
   <audio id="soundVictory" preload="auto"><source src="/static/sounds/ganar_ronda.mp3" type="audio/mpeg"><source src="/static/sounds/victoria.wav" type="audio/wav"></audio>
   <audio id="soundTimeout" preload="auto" src="/static/sounds/tiempo.wav"></audio>
-  <script src="/static/public.js?v=12.0"></script>
+  <script src="/static/public.js?v=13.0"></script>
 </body>
 </html>

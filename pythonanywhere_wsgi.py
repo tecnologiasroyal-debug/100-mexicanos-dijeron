@@ -11,7 +11,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 # IMPORTANT:
 # In the PythonAnywhere WSGI configuration file, set CONTROL_PIN before
 # importing this module, for example:
-#   os.environ['CONTROL_PIN'] = '482731'
+#   El PIN del juego está fijado en app.py como 19030792
 
 from app import APP, APP_VERSION, MAX_UPLOAD_BYTES, STATIC_DIR, SUPPORTED_ACTIONS, UserError
 
@@ -112,6 +112,7 @@ def application(environ: Dict[str, Any], start_response):
 
             if path == "/api/public/state":
                 with APP.lock:
+                    APP.mark_tv_seen()
                     return _json(start_response, 200, {"ok": True, "data": APP.public_payload()})
 
             if path == "/api/control/state":
@@ -174,6 +175,12 @@ def application(environ: Dict[str, Any], start_response):
                 if secrets.compare_digest(str(data.get("code", "")), str(APP.config["control_pin"])):
                     return _json(start_response, 200, {"ok": True, "token": APP.session_token})
                 return _error(start_response, 401, "Código de control incorrecto.")
+
+            if path == "/api/public/ready":
+                data = _read_json(environ)
+                with APP.lock:
+                    APP.set_tv_audio_ready(bool(data.get("ready", False)))
+                return _json(start_response, 200, {"ok": True, "ready": bool(data.get("ready", False))})
 
             if path == "/api/action":
                 if not _authorized(environ):

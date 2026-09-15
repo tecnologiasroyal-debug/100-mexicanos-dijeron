@@ -110,6 +110,9 @@ def sanitize_state(raw: Dict[str, Any] | None) -> Dict[str, Any]:
     except Exception:
         winner = None
     base["winner"] = winner if winner in (0, 1) else None
+    # Si una partida ya está en curso o terminó, la TV debe recuperar el tablero aunque un estado antiguo no tuviera public_started.
+    if base.get("round_phase") in ("faceoff", "active", "review") or base.get("game_over"):
+        base["public_started"] = True
 
     timer = base.get("timer") if isinstance(base.get("timer"), dict) else {}
     duration = max(1, min(3600, int(timer.get("duration", 30) or 30)))
@@ -255,6 +258,8 @@ def start_round(state: Dict[str, Any], bank: List[Dict[str, Any]]) -> None:
     state["round_phase"] = "faceoff"
     state["control_team"] = None
     state["question_visible"] = False
+    # Respaldo de sincronización: si el conductor inicia el duelo, la TV ya no puede quedarse en espera.
+    state["public_started"] = True
     add_event(state, "round_start", question_id=str(question["id"]))
 
 
@@ -566,7 +571,7 @@ def public_state(state: Dict[str, Any], bank: List[Dict[str, Any]], now: float |
         "control_team": state.get("control_team"),
         "game_over": bool(state.get("game_over", False)),
         "winner": state.get("winner"),
-        "public_started": bool(state.get("public_started", False)),
+        "public_started": bool(state.get("public_started", False) or state.get("round_phase") in ("faceoff", "active", "review") or state.get("game_over", False)),
         "timer": timer,
         "fast_money": {
             "target": int(state["fast_money"]["target"]),
