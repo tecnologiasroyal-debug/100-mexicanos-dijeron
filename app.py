@@ -62,7 +62,7 @@ HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", os.environ.get("CIEN_MEXICANOS_PORT", "8765")))
 HOSTED = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-APP_VERSION = "13.0.0"
+APP_VERSION = "14.1.0"
 FIXED_CONTROL_PIN = "19030792"
 
 SUPPORTED_ACTIONS = {

@@ -1,4 +1,4 @@
-const CLIENT_VERSION = "13.0.0";
+const CLIENT_VERSION = "14.1.0";
 const REQUIRED_BACKEND_ACTIONS = ["start_round","show_question","set_control_team","faceoff_miss","reveal","strike","award","next_question","undo","finish_game","start_game_display"];
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -178,7 +178,7 @@ function renderQuestionPrep(data) {
   sel.value=wanted;
   sel.disabled=['faceoff','active','review'].includes(st.round_phase)||st.round_awarded;
   const usage=data.question_usage||{remaining:data.questions.length,total:data.questions.length,warning:''};
-  $('#usageCounter').textContent=`${usage.remaining} disponibles`;
+  $('#usageCounter').textContent=`${usage.remaining} preguntas disponibles`;
   $('#usageModalCounter').textContent=`${usage.remaining} / ${usage.total}`;
   const warn=$('#usageWarning');
   if (usage.warning) { warn.textContent=usage.warning; warn.classList.remove('hidden'); } else warn.classList.add('hidden');
@@ -196,6 +196,9 @@ function renderQuestionPrep(data) {
 }
 function renderFaceoff(data) {
   const st=data.state, q=questionForState(data), revealed=new Set(st.revealed||[]);
+  const answerCount = q?.answers?.length || 0;
+  if ($('#faceoffAnswerCount')) $('#faceoffAnswerCount').textContent = String(answerCount);
+  if ($('#faceoffAnswerWord')) $('#faceoffAnswerWord').textContent = answerCount === 1 ? 'respuesta' : 'respuestas';
   $('#faceoffQuestionText').textContent=q?.question||'Selecciona una pregunta';
   const showBtn = $('#showQuestionBtn');
   if (showBtn) {
@@ -222,6 +225,14 @@ function renderLive(data) {
   $('#roundPointsControl').textContent=st.round_points;
   $('#liveQuestionText').textContent=q?.question||'Selecciona una pregunta';
   $('.control-team-banner')?.classList.toggle('orange-control', st.control_team===1);
+  const teambackActive = st.round_phase === 'active' && !st.round_awarded && Number(st.errors || 0) >= 2 && (st.control_team === 0 || st.control_team === 1);
+  const teambackBox = $('#teambackMobile');
+  if (teambackBox) {
+    const opposite = st.control_team === 0 ? st.teams[1] : st.teams[0];
+    teambackBox.classList.toggle('hidden', !teambackActive);
+    if (teambackActive && $('#teambackMobileName')) $('#teambackMobileName').textContent = opposite?.name || 'FAMILIA CONTRARIA';
+    teambackBox.classList.toggle('critical', Number(st.errors || 0) >= 3);
+  }
   $('#strikeCount').textContent=`${st.errors} / 3`;
   $$('#strikeVisual span').forEach((x,i)=>x.classList.toggle('active',st.errors>i));
   $('#strikeBtn').disabled=st.round_phase!=='active'||st.errors>=3||st.round_awarded;
@@ -383,7 +394,7 @@ $('#startDisplayBtn').onclick=async()=>{
 $('#continueGameBtn').onclick=()=>{ const st=current?.state; setStep(st?.round_awarded||st?.round_phase==='review'?5:st?.round_phase==='active'?4:st?.round_phase==='faceoff'?3:2); };
 $$('[data-goto-step]').forEach(btn=>btn.onclick=()=>{ const target=Number(btn.dataset.gotoStep); const st=current?.state; if(target===3&&!['faceoff','active'].includes(st?.round_phase)){return message('Primero inicia el duelo.',true);} if(target===4&&st?.round_phase!=='active'){return message('Primero elige quién ganó el duelo.',true);} if(target===5&&!['active','review'].includes(st?.round_phase)){return message('Primero juega la ronda.',true);} if(target===1 && current && !teamDraftDirty) syncTeamDraftFromState(current.state); setStep(target); });
 $('#questionSelect').onchange=e=>apiAction('set_question',{question_id:e.target.value}).then(()=>message('Pregunta preparada.')).catch(e=>message(e.message,true));
-$('#startRoundBtn').onclick=()=>apiAction('start_round').then(()=>{setStep(3);message('Duelo iniciado. Pasa un participante de cada equipo.');}).catch(e=>message(e.message,true));
+$('#startRoundBtn').onclick=()=>apiAction('start_round').then(()=>{setStep(3);message('Ronda iniciada. Lee el speech y después la pregunta.');}).catch(e=>message(e.message,true));
 $('#showQuestionBtn').onclick=()=>apiAction('show_question').then(()=>message('Pregunta mostrada en la TV.')).catch(e=>message(e.message,true));
 $('#faceoffMissBtn').onclick=()=>apiAction('faceoff_miss').then(()=>message('Respuesta no encontrada. No se sumó strike.')).catch(e=>message(e.message,true));
 $('#faceoffAnswers').onclick=e=>{const b=e.target.closest('[data-faceoff-reveal]');if(!b)return;apiAction('reveal',{index:Number(b.dataset.faceoffReveal)}).then(()=>message('Respuesta del duelo revelada.')).catch(x=>message(x.message,true));};

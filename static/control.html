@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#061b40" />
   <title>Conductor — 100 Mexicanos Dijeron</title>
-  <link rel="stylesheet" href="/static/styles.css?v=13.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=14.1" />
 </head>
 <body class="app-body control-body host-v5">
   <section id="loginView" class="host-login login-v10">
@@ -23,7 +23,7 @@
       </div>
       <button id="loginBtn" class="host-primary host-big">ENTRAR</button>
       <div id="loginMsg" class="notice error hidden"></div>
-      <div class="host-credit">Desarrollado por Carlos Rivas · V13</div>
+      <div class="host-credit">Desarrollado por Carlos Rivas · V14.1</div>
     </div>
   </section>
 
@@ -92,7 +92,7 @@
           <div class="host-screen-head compact-head">
             <span class="host-step-label">PASO 2 DE 5</span>
             <h1>Prepara la ronda</h1>
-            <p>Elige la pregunta. El valor cambia automáticamente según la ronda clásica.</p>
+            <p>La pregunta se mantiene oculta hasta el duelo. Usa este momento para llamar a los representantes.</p>
           </div>
 
           <div class="round-preview-strip">
@@ -101,11 +101,14 @@
             <div class="preview-team orange"><span id="prepTeam2Name">Equipo 2</span><b id="prepTeam2Score">0</b></div>
           </div>
 
-          <article class="host-panel">
-            <div class="host-panel-title"><span>Pregunta</span><b id="usageCounter">0 disponibles</b></div>
-            <select id="questionSelect" class="host-select"></select>
-            <div id="usageWarning" class="usage-warning hidden"></div>
+          <article class="host-speech-card prep-speech-card">
+            <span class="speech-kicker">SPEECH DEL CONDUCTOR</span>
+            <p>Pase un representante de cada familia o equipo y...</p>
+            <strong>¡VAMOS A JUGAR!</strong>
+            <small id="usageCounter">0 preguntas disponibles</small>
           </article>
+          <select id="questionSelect" class="hidden" aria-hidden="true" tabindex="-1"></select>
+          <div id="usageWarning" class="usage-warning hidden"></div>
 
           <article class="host-panel round-schedule-panel">
             <div class="host-panel-title"><span>Valor automático</span><small>Formato clásico</small></div>
@@ -117,7 +120,7 @@
             <p class="round-schedule-note">Rondas 1–3 normales · Ronda 4 al doble · Ronda 5 y posteriores al triple.</p>
           </article>
 
-          <button id="startRoundBtn" class="host-primary host-next">▶ INICIAR DUELO</button>
+          <button id="startRoundBtn" class="host-primary host-next start-round-v14">▶ INICIAR RONDA</button>
           <button class="host-back" data-goto-step="1">← Volver a equipos</button>
         </section>
 
@@ -126,8 +129,13 @@
           <div class="host-screen-head compact-head">
             <span class="host-step-label">PASO 3 DE 5</span>
             <h1>Duelo inicial</h1>
-            <p>Pasa un participante de cada equipo a los zumbadores. Pregunta primero a quien presionó antes y luego decide qué familia continúa.</p>
+            <p>Lee el speech y después la pregunta. La TV seguirá sin mostrarla hasta que tú decidas.</p>
           </div>
+
+          <article class="host-speech-card duel-speech-card">
+            <span class="speech-kicker">SPEECH DEL CONDUCTOR</span>
+            <p>Buscamos <strong id="faceoffAnswerCount">6</strong> <span id="faceoffAnswerWord">respuestas</span> en el tablero, buscamos la más popular:</p>
+          </article>
 
           <button id="showQuestionBtn" class="host-question-live faceoff-question faceoff-question-button" type="button">
             <span>PREGUNTA DEL DUELO</span>
@@ -176,6 +184,7 @@
         <!-- PASO 4: JUEGA LA FAMILIA -->
         <section id="step4" class="host-screen hidden">
           <div class="control-team-banner">EN CONTROL: <strong id="controlTeamLive">EQUIPO</strong></div>
+          <div id="teambackMobile" class="teamback-mobile hidden"><span>TEAMBACK</span><strong id="teambackMobileName">FAMILIA CONTRARIA</strong><small>Prepárense para un posible robo</small></div>
           <div class="live-topline">
             <div><span>RONDA EN JUEGO</span><b id="liveMultiplier">×1</b></div>
             <div class="live-pot"><span>BOLSA</span><strong id="roundPointsControl">0</strong></div>
@@ -252,7 +261,7 @@
         </div>
         <button id="boardBtn" class="host-bottom-action">▣ <span>TABLERO</span></button>
       </div>
-      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V13</div>
+      <div class="host-credit-fixed">Desarrollado por Carlos Rivas · V14.1</div>
     </div>
 
     <!-- DINERO RÁPIDO COMO MODO SEPARADO -->

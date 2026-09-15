@@ -205,6 +205,10 @@ function render(s) {
   $('#team2Name').textContent = s.teams[1].name;
   $('#team1Score').textContent = s.teams[0].score;
   $('#team2Score').textContent = s.teams[1].score;
+  const teambackActive = s.round_phase === 'active' && !s.round_awarded && Number(s.errors || 0) >= 2 && (s.control_team === 0 || s.control_team === 1);
+  const tb1 = $('#team1Teamback'), tb2 = $('#team2Teamback');
+  if (tb1) { tb1.classList.toggle('show', teambackActive && s.control_team === 1); tb1.classList.toggle('critical', Number(s.errors || 0) >= 3); }
+  if (tb2) { tb2.classList.toggle('show', teambackActive && s.control_team === 0); tb2.classList.toggle('critical', Number(s.errors || 0) >= 3); }
   $('#roundTotal').textContent = s.round_points;
   $('#multiplier').textContent = `×${s.multiplier}`;
   const m = Number(s.multiplier || 1);
